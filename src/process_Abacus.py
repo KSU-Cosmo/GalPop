@@ -28,8 +28,7 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
         Arrays within each category have the same length, but halo and subsample
         arrays may have different lengths from each other.
     """
-def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
-    """Process a single Abacus simulation slab file."""
+
     cat = CompaSOHaloCatalog(
         slabname,
         subsamples=dict(A=True, rv=True),
@@ -207,7 +206,6 @@ def main():
     #
     # # Later, to read the data:
     # halo_data, subsample_data = read_results_fits("abacus_results.fits")
-    pass
 
 
 if __name__ == "__main__":
