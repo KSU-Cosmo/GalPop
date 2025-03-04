@@ -135,10 +135,9 @@ def _validate_fits_data(halo_data, subsample_data, mock_results):
 def test_save_and_read_fits(mock_results):
     """Test saving and reading results to/from FITS file"""
     with tempfile.NamedTemporaryFile(suffix='.fits', delete=False) as temp_file:
-        temp_file.flush()
+        temp_file.close()
         temp_filename = temp_file.name
         save_results_fits(mock_results, temp_filename)
-        temp_file.close()
 
         if not os.path.exists(temp_filename):
             raise ValueError("FITS file was not created")
