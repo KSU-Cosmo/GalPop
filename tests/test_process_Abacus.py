@@ -204,6 +204,33 @@ def test_process_and_save_workflow():
     with patch('process_Abacus.CompaSOHaloCatalog') as mock_CompaSO, \
          patch('process_Abacus.glob.glob') as mock_glob:
         
+        # Set up the mock catalog
+        mock_catalog = MagicMock()
+        mock_catalog.header = {
+            'BoxSizeHMpc': 500.0,
+            'ParticleMassHMsun': 1.0e10,
+            'H0': 70.0,
+            'VelZSpace_to_kms': 100.0
+        }
+        
+        # Create simple test data with astropy Columns
+        mock_catalog.halos = {
+            'N': Column(data=np.array([1000, 2000]), name='N'),
+            'x_L2com': Column(data=np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]), name='x_L2com'),
+            'v_L2com': Column(data=np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]), name='v_L2com'),
+            'npoutA': Column(data=np.array([2, 3]), name='npoutA'),
+            'sigmav3d_L2com': Column(data=np.array([200.0, 300.0]), name='sigmav3d_L2com')
+        }
+        
+        mock_catalog.subsamples = {
+            'pos': Column(data=np.random.rand(5, 3), name='pos'),
+            'vel': Column(data=np.random.rand(5, 3) * 0.1, name='vel')
+        }
+        
+        # Set up the mocks
+        mock_CompaSO.return_value = mock_catalog
+        mock_glob.return_value = ["slab1.asdf"]
+        
         # Create and properly close the temp file before using it
         temp_file = tempfile.NamedTemporaryFile(suffix='.fits', delete=False)
         temp_file.close()
