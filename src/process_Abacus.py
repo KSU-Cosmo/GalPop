@@ -28,90 +28,54 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
         Arrays within each category have the same length, but halo and subsample
         arrays may have different lengths from each other.
     """
-    id_key = 'id'
-    pos_key = 'x_L2com'
-    vel_key = 'v_L2com'
-    N_key = 'N'  # number of particles, also Mass if * Mparticle in header
-    cleaning = True
+def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
+    """Process a single Abacus simulation slab file."""
     cat = CompaSOHaloCatalog(
         slabname,
-        subsamples=dict(A=True, rv=True),  # A for subsample A (3%), B for subsample B(7%)
-        fields=[
-            N_key,
-            pos_key,
-            vel_key,
-            'npstartA',
-            'npoutA',
-            'sigmav3d_L2com',  # velocity dispersion
-        ],
-        cleaned=cleaning,
+        subsamples=dict(A=True, rv=True),
+        fields=['N', 'x_L2com', 'v_L2com', 'npstartA', 'npoutA', 'sigmav3d_L2com'],
+        cleaned=True,
     )
     
-    # Extract header information
-    header = cat.header
-    Lbox = cat.header['BoxSizeHMpc']
-    Mpart = header['ParticleMassHMsun']  # msun / h
-    H0 = header['H0']
-    h = H0 / 100.0
-    velz2kms = header['VelZSpace_to_kms'] / Lbox 
-    inv_velz2kms = 1 / velz2kms 
+    # Extract scaling factors from header
+    Mpart = cat.header['ParticleMassHMsun']
+    inv_velz2kms = 1 / (cat.header['VelZSpace_to_kms'] / cat.header['BoxSizeHMpc'])
     
     # Calculate halo masses and apply mass threshold
-    Mh = Mpart * cat.halos["N"] 
+    Mh = Mpart * cat.halos["N"]
     Hmask = (Mh > pow(10, Mhlow))
     
-    # Create repeated arrays for host properties
+    # Create arrays for host properties
     host_masses = np.repeat(Mh, cat.halos["npoutA"])
-    host_zvelocity = np.repeat(cat.halos[vel_key][:,2], cat.halos["npoutA"])
-    host_npart = np.repeat(cat.halos["npoutA"], cat.halos["npoutA"])
+    host_zvel = np.repeat(cat.halos['v_L2com'][:,2], cat.halos["npoutA"])
     
-    # Create masks for subhalo selection
-    Smask1 = (host_masses > pow(10, Mslow))  # Mass threshold
-    # Take at most maxsats subhalos per host
-    Smask2 = np.concatenate([np.concatenate((np.ones(min(n, maxsats)), np.zeros(max(n - maxsats, 0)))) for n in cat.halos["npoutA"]])
-    Smask = np.logical_and(Smask1, Smask2.astype(bool))
+    # Create combined mask for subhalo selection
+    sub_count_mask = np.concatenate([np.concatenate((np.ones(min(n, maxsats)), 
+                     np.zeros(max(n - maxsats, 0)))) for n in cat.halos["npoutA"]])
+    Smask = np.logical_and(host_masses > pow(10, Mslow), sub_count_mask.astype(bool))
     
-    # Extract halo properties using mask
-    Mh = Mh[Hmask]
-    xh = cat.halos[pos_key][Hmask, 0]
-    yh = cat.halos[pos_key][Hmask, 1]
-    zh = cat.halos[pos_key][Hmask, 2]
-    vh = cat.halos[vel_key][Hmask, 2] * inv_velz2kms
-    sh = np.sqrt(cat.halos['sigmav3d_L2com'][Hmask]) * inv_velz2kms
-    
-    # Extract subhalo properties using mask
-    Ms = host_masses[Smask]
-    vhost = host_zvelocity[Smask] * inv_velz2kms
-    ns = host_npart[Smask]
-    xs = cat.subsamples['pos'][Smask, 0]
-    ys = cat.subsamples['pos'][Smask, 1]
-    zs = cat.subsamples['pos'][Smask, 2]
-    vs = cat.subsamples['vel'][Smask, 2] * inv_velz2kms
-    
-    # Return a dictionary with named arrays
-    result = {
-        # Halo properties
-        'halo': {
-            'mass': Mh.value,
-            'x': xh.value,
-            'y': yh.value, 
-            'z': zh.value,
-            'sigma': sh.value,
-            'velocity': vh.value
-        },
-        # Subsample properties
-        'subsample': {
-            'mass': Ms.value,
-            'host_velocity': vhost.value,
-            'n_particles': ns.value,
-            'x': xs.value,
-            'y': ys.value,
-            'z': zs.value,
-            'velocity': vs.value
-        }
+    # Extract and scale halo properties
+    halo_props = {
+        'mass': Mh[Hmask].value,
+        'x': cat.halos['x_L2com'][Hmask, 0].value,
+        'y': cat.halos['x_L2com'][Hmask, 1].value,
+        'z': cat.halos['x_L2com'][Hmask, 2].value,
+        'velocity': cat.halos['v_L2com'][Hmask, 2].value * inv_velz2kms,
+        'sigma': np.sqrt(cat.halos['sigmav3d_L2com'][Hmask]).value * inv_velz2kms
     }
     
-    return result
+    # Extract and scale subsample properties
+    subsample_props = {
+        'mass': host_masses[Smask].value,
+        'host_velocity': host_zvel[Smask].value * inv_velz2kms,
+        'n_particles': np.repeat(cat.halos["npoutA"], cat.halos["npoutA"])[Smask].value,
+        'x': cat.subsamples['pos'][Smask, 0].value,
+        'y': cat.subsamples['pos'][Smask, 1].value,
+        'z': cat.subsamples['pos'][Smask, 2].value,
+        'velocity': cat.subsamples['vel'][Smask, 2].value * inv_velz2kms
+    }
+    
+    return {'halo': halo_props, 'subsample': subsample_props}
 
 
 def process_Abacus_directory(dir_path, Mhlow, Mslow, maxsats):
