@@ -5,7 +5,7 @@ import os
 import sys
 import tempfile
 from astropy.io import fits
-from astropy.table import Table, Column
+from astropy.table import Column
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
 
