@@ -233,11 +233,7 @@ def test_process_and_save_workflow():
         
         try:
             # Process the directory
-            print("Processing directory...")
             results = process_Abacus_directory("/dummy/path/", 12.0, 12.5, 5)
-            print(f"Results structure: {results.keys()}")
-            print(f"Halo data length: {len(results['halo']['mass'])}")
-            print(f"Subsample data length: {len(results['subsample']['mass'])}")
             
             # Save and read results using temp_filename
             save_results_fits(results, temp_filename)
