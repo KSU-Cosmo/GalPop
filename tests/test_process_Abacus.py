@@ -141,6 +141,7 @@ def test_process_Abacus_directory(mock_process_slab, mock_glob, mock_results):
 def test_save_and_read_fits(mock_results):
     """Test saving and reading results to/from FITS file"""
     with tempfile.NamedTemporaryFile(suffix='.fits', delete=False) as temp_file:
+        temp_file.flush()
         temp_filename = temp_file.name
     
     try:
