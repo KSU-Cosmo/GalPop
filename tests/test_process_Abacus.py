@@ -139,6 +139,7 @@ def test_save_and_read_fits(mock_results):
         temp_file.flush()
         temp_filename = temp_file.name
         save_results_fits(mock_results, temp_filename)
+        temp_file.close()
         
         if not os.path.exists(temp_filename):
             raise ValueError("FITS file was not created")
