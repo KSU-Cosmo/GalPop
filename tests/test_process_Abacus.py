@@ -85,7 +85,6 @@ def test_process_Abacus_slab(mock_CompaSO, mock_compaso_catalog):
     """Test processing of a single Abacus slab"""
     mock_CompaSO.return_value = mock_compaso_catalog
     result = process_Abacus_slab("dummy_slab.asdf", 12.0, 12.5, 5)
-    
     _validate_result_structure(result)
     _validate_required_fields(result['halo'],
                             ['mass', 'x', 'y', 'z', 'sigma', 'velocity'],

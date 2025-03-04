@@ -48,7 +48,6 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
     sub_count_mask = np.concatenate([np.concatenate((np.ones(min(n, maxsats)),
                      np.zeros(max(n - maxsats, 0)))) for n in cat.halos["npoutA"]])
     Smask = np.logical_and(host_masses > pow(10, Mslow), sub_count_mask.astype(bool))
-    
     # Extract and scale halo properties
     halo_props = {
         'mass': Mh[Hmask].value,
