@@ -44,7 +44,6 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
     # Create arrays for host properties
     host_masses = np.repeat(Mh, cat.halos["npoutA"])
     host_zvel = np.repeat(cat.halos['v_L2com'][:,2], cat.halos["npoutA"])
-    
     # Create combined mask for subhalo selection
     sub_count_mask = np.concatenate([np.concatenate((np.ones(min(n, maxsats)),
                      np.zeros(max(n - maxsats, 0)))) for n in cat.halos["npoutA"]])
