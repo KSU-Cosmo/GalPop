@@ -1,0 +1,16 @@
+# FITS files
+*.fits
+
+# Other common data files
+*.asdf
+*.hdf5
+*.h5
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Virtual Environment
+.venv/

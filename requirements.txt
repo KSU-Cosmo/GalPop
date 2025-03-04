@@ -1,0 +1,3 @@
+abacusutils # only necessary for AbacusSummit files
+numpy
+astropy
