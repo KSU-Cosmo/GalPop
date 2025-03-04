@@ -91,19 +91,28 @@ def test_process_Abacus_slab(mock_CompaSO, mock_compaso_catalog):
     
     result = process_Abacus_slab("dummy_slab.asdf", 12.0, 12.5, 5)
     
-    assert 'halo' in result, "Missing 'halo' key in result"
-    assert 'subsample' in result, "Missing 'subsample' key in result"
+    if 'halo' not in result:
+        raise ValueError("Missing 'halo' key in result")
+        
+    if 'subsample' not in result:
+        raise ValueError("Missing 'subsample' key in result")
 
     for field in ['mass', 'x', 'y', 'z', 'sigma', 'velocity']:
-        assert field in result['halo'], f"Missing {field} in halo data"
+        if field not in result['halo']:
+            raise ValueError(f"Missing {field} in halo data")
     
     for field in ['mass', 'host_velocity', 'n_particles', 'x', 'y', 'z', 'velocity']:
-        assert field in result['subsample'], f"Missing {field} in subsample data"
+        if field not in result['subsample']:
+            raise ValueError(f"Missing {field} in subsample data")
     
-    assert all(array.shape == (2,) for array in result['halo'].values()), "Not all halo arrays have the expected shape"
+    for array in result['halo'].values():
+        if array.shape != (2,):
+            raise ValueError("Not all halo arrays have the expected shape")
     
     subsample_length = len(result['subsample']['mass'])
-    assert all(array.shape == (subsample_length,) for array in result['subsample'].values()), "Subsample arrays have inconsistent shapes"
+    for array in result['subsample'].values():
+        if array.shape != (subsample_length,):
+            raise ValueError("Subsample arrays have inconsistent shapes")
 
 # ----- Tests for process_Abacus_directory -----
 
@@ -116,13 +125,18 @@ def test_process_Abacus_directory(mock_process_slab, mock_glob, mock_results):
     
     result = process_Abacus_directory("/dummy/path/", 12.0, 12.5, 5)
     
-    assert mock_process_slab.call_count == 2, "process_Abacus_slab was not called twice"
+    if mock_process_slab.call_count != 2:
+        raise ValueError("process_Abacus_slab was not called twice")
     
-    assert 'halo' in result, "Missing 'halo' key in result"
-    assert 'subsample' in result, "Missing 'subsample' key in result"
+    if 'halo' not in result:
+        raise ValueError("Missing 'halo' key in result")
+    if 'subsample' not in result:
+        raise ValueError("Missing 'subsample' key in result")
     
-    assert len(result['halo']['mass']) == len(mock_results['halo']['mass']) * 2, "Unexpected length of halo mass array"
-    assert len(result['subsample']['mass']) == len(mock_results['subsample']['mass']) * 2, "Unexpected length of subsample mass array"
+    if len(result['halo']['mass']) != len(mock_results['halo']['mass']) * 2:
+        raise ValueError("Unexpected length of halo mass array")
+    if len(result['subsample']['mass']) != len(mock_results['subsample']['mass']) * 2:
+        raise ValueError("Unexpected length of subsample mass array")
 
 def test_save_and_read_fits(mock_results):
     """Test saving and reading results to/from FITS file"""
@@ -132,15 +146,20 @@ def test_save_and_read_fits(mock_results):
     try:
         save_results_fits(mock_results, temp_filename)
         
-        assert os.path.exists(temp_filename), "FITS file was not created"
+        if not os.path.exists(temp_filename):
+            raise ValueError("FITS file was not created")
         
         halo_data, subsample_data = read_results_fits(temp_filename)
         
-        assert len(halo_data) == len(mock_results['halo']['mass']), "Halo data length mismatch"
-        assert len(subsample_data) == len(mock_results['subsample']['mass']), "Subsample data length mismatch"
+        if len(halo_data) != len(mock_results['halo']['mass']):
+            raise ValueError("Halo data length mismatch")
+        if len(subsample_data) != len(mock_results['subsample']['mass']):
+            raise ValueError("Subsample data length mismatch")
         
-        np.testing.assert_array_equal(halo_data['mass'], mock_results['halo']['mass'])
-        np.testing.assert_array_equal(subsample_data['mass'], mock_results['subsample']['mass'])
+        if not np.array_equal(halo_data['mass'], mock_results['halo']['mass']):
+            raise ValueError("Halo mass arrays do not match")
+        if not np.array_equal(subsample_data['mass'], mock_results['subsample']['mass']):
+            raise ValueError("Subsample mass arrays do not match")
         
     finally:
         if os.path.exists(temp_filename):
