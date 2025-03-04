@@ -133,9 +133,10 @@ def _validate_fits_data(halo_data, subsample_data, mock_results):
 
 def test_save_and_read_fits(mock_results):
     """Test saving and reading results to/from FITS file"""
-    with tempfile.NamedTemporaryFile(suffix='.fits', delete=False) as temp_file:
-        temp_file.close()
-        temp_filename = temp_file.name
+    fd, temp_filename = tempfile.mkstemp(suffix='.fits')
+    os.close(fd)  # Close the file descriptor immediately
+    
+    try:
         save_results_fits(mock_results, temp_filename)
 
         if not os.path.exists(temp_filename):
@@ -143,6 +144,8 @@ def test_save_and_read_fits(mock_results):
         
         halo_data, subsample_data = read_results_fits(temp_filename)
         _validate_fits_data(halo_data, subsample_data, mock_results)
+    finally:
+        os.unlink(temp_filename)  # Clean up the temporary file
 
 def _validate_result_structure(result):
     """Validate the basic structure of the result dictionary"""
