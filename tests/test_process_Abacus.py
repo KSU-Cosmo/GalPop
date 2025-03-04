@@ -239,9 +239,9 @@ def test_process_and_save_workflow():
             save_results_fits(results, temp_filename)
             halo_data, subsample_data = read_results_fits(temp_filename)
             
-            # Check we got something back
-            assert len(halo_data) > 0
-            assert len(subsample_data) > 0
+            # Better assertions with more descriptive failure messages
+            pytest.assume(len(halo_data) > 0, "No halo data was returned")
+            pytest.assume(len(subsample_data) > 0, "No subsample data was returned")
             
         finally:
             # Clean up
