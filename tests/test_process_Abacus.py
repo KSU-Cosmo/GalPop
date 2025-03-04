@@ -89,28 +89,14 @@ def test_process_Abacus_slab(mock_CompaSO, mock_compaso_catalog):
     
     result = process_Abacus_slab("dummy_slab.asdf", 12.0, 12.5, 5)
     
-    if 'halo' not in result:
-        raise ValueError("Missing 'halo' key in result")
-        
-    if 'subsample' not in result:
-        raise ValueError("Missing 'subsample' key in result")
-
-    for field in ['mass', 'x', 'y', 'z', 'sigma', 'velocity']:
-        if field not in result['halo']:
-            raise ValueError(f"Missing {field} in halo data")
-    
-    for field in ['mass', 'host_velocity', 'n_particles', 'x', 'y', 'z', 'velocity']:
-        if field not in result['subsample']:
-            raise ValueError(f"Missing {field} in subsample data")
-    
-    for array in result['halo'].values():
-        if array.shape != (2,):
-            raise ValueError("Not all halo arrays have the expected shape")
-    
-    subsample_length = len(result['subsample']['mass'])
-    for array in result['subsample'].values():
-        if array.shape != (subsample_length,):
-            raise ValueError("Subsample arrays have inconsistent shapes")
+    _validate_result_structure(result)
+    _validate_required_fields(result['halo'], 
+                            ['mass', 'x', 'y', 'z', 'sigma', 'velocity'],
+                            'halo')
+    _validate_required_fields(result['subsample'],
+                            ['mass', 'host_velocity', 'n_particles', 'x', 'y', 'z', 'velocity'],
+                            'subsample')
+    _validate_array_shapes(result)
 
 # ----- Tests for process_Abacus_directory -----
 
@@ -151,6 +137,7 @@ def _validate_fits_data(halo_data, subsample_data, mock_results):
 def test_save_and_read_fits(mock_results):
     """Test saving and reading results to/from FITS file"""
     with tempfile.NamedTemporaryFile(suffix='.fits', delete=True) as temp_file:
+        temp_file.flush()
         temp_filename = temp_file.name
         save_results_fits(mock_results, temp_filename)
         
@@ -159,3 +146,27 @@ def test_save_and_read_fits(mock_results):
         
         halo_data, subsample_data = read_results_fits(temp_filename)
         _validate_fits_data(halo_data, subsample_data, mock_results)
+
+def _validate_result_structure(result):
+    """Validate the basic structure of the result dictionary"""
+    if 'halo' not in result:
+        raise ValueError("Missing 'halo' key in result")
+    if 'subsample' not in result:
+        raise ValueError("Missing 'subsample' key in result")
+
+def _validate_required_fields(data, fields, data_type):
+    """Validate that all required fields are present in the data"""
+    for field in fields:
+        if field not in data:
+            raise ValueError(f"Missing {field} in {data_type} data")
+
+def _validate_array_shapes(result):
+    """Validate the shapes of arrays in the result"""
+    for array in result['halo'].values():
+        if array.shape != (2,):
+            raise ValueError("Not all halo arrays have the expected shape")
+    
+    subsample_length = len(result['subsample']['mass'])
+    for array in result['subsample'].values():
+        if array.shape != (subsample_length,):
+            raise ValueError("Subsample arrays have inconsistent shapes")
