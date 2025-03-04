@@ -96,24 +96,25 @@ def test_process_Abacus_slab(mock_CompaSO, mock_compaso_catalog):
     result = process_Abacus_slab("dummy_slab.asdf", 12.0, 12.5, 5)
     
     # Check the result structure
-    assert 'halo' in result
-    assert 'subsample' in result
+    pytest.assume('halo' in result, "Missing 'halo' key in result")
+    pytest.assume('subsample' in result, "Missing 'subsample' key in result")
     
     # Check that halo fields exist
     for field in ['mass', 'x', 'y', 'z', 'sigma', 'velocity']:
-        assert field in result['halo']
+        pytest.assume(field in result['halo'], f"Missing {field} in halo data")
     
     # Check that subsample fields exist
     for field in ['mass', 'host_velocity', 'n_particles', 'x', 'y', 'z', 'velocity']:
-        assert field in result['subsample']
+        pytest.assume(field in result['subsample'], f"Missing {field} in subsample data")
     
     # Check that the masks were applied correctly
-    # Given our mock data and thresholds, we expect 2 halos to pass the mass threshold
-    assert all(array.shape == (2,) for array in result['halo'].values())
+    pytest.assume(all(array.shape == (2,) for array in result['halo'].values()),
+                 "Not all halo arrays have the expected shape")
     
     # The exact number of subsamples will depend on the masking logic
     subsample_length = len(result['subsample']['mass'])
-    assert all(array.shape == (subsample_length,) for array in result['subsample'].values())
+    pytest.assume(all(array.shape == (subsample_length,) for array in result['subsample'].values()),
+                 "Not all subsample arrays have consistent shapes")
 
 # ----- Tests for process_Abacus_directory -----
 
@@ -129,15 +130,17 @@ def test_process_Abacus_directory(mock_process_slab, mock_glob, mock_results):
     result = process_Abacus_directory("/dummy/path/", 12.0, 12.5, 5)
     
     # Check that process_Abacus_slab was called the expected number of times
-    assert mock_process_slab.call_count == 2
+    pytest.assume(mock_process_slab.call_count == 2, "process_Abacus_slab was not called twice")
     
     # Check that the result has the expected structure
-    assert 'halo' in result
-    assert 'subsample' in result
+    pytest.assume('halo' in result, "Missing 'halo' key in result")
+    pytest.assume('subsample' in result, "Missing 'subsample' key in result")
     
     # Since we return the same mock_results twice, the lengths should double
-    assert len(result['halo']['mass']) == len(mock_results['halo']['mass']) * 2
-    assert len(result['subsample']['mass']) == len(mock_results['subsample']['mass']) * 2
+    pytest.assume(len(result['halo']['mass']) == len(mock_results['halo']['mass']) * 2,
+                 "Unexpected length of halo mass array")
+    pytest.assume(len(result['subsample']['mass']) == len(mock_results['subsample']['mass']) * 2,
+                 "Unexpected length of subsample mass array")
 
 def test_process_Abacus_directory_error_handling():
     """Test error handling in process_Abacus_directory"""
@@ -159,8 +162,8 @@ def test_process_Abacus_directory_error_handling():
             result = process_Abacus_directory("/dummy/path/", 12.0, 12.5, 5)
             
             # Should still have the results from the first slab
-            assert len(result['halo']['mass']) == 1
-            assert len(result['subsample']['mass']) == 1
+            pytest.assume(len(result['halo']['mass']) == 1, "Expected one halo in results")
+            pytest.assume(len(result['subsample']['mass']) == 1, "Expected one subsample in results")
 
 # ----- Tests for save_results_fits and read_results_fits -----
 
@@ -174,14 +177,16 @@ def test_save_and_read_fits(mock_results):
         save_results_fits(mock_results, temp_filename)
         
         # Check the file was created
-        assert os.path.exists(temp_filename)
+        pytest.assume(os.path.exists(temp_filename), "FITS file was not created")
         
         # Read the results back
         halo_data, subsample_data = read_results_fits(temp_filename)
         
         # Check the data was read correctly
-        assert len(halo_data) == len(mock_results['halo']['mass'])
-        assert len(subsample_data) == len(mock_results['subsample']['mass'])
+        pytest.assume(len(halo_data) == len(mock_results['halo']['mass']),
+                     "Halo data length mismatch")
+        pytest.assume(len(subsample_data) == len(mock_results['subsample']['mass']),
+                     "Subsample data length mismatch")
         
         # Check the field values match
         np.testing.assert_array_equal(halo_data['mass'], mock_results['halo']['mass'])
@@ -199,36 +204,9 @@ def test_process_and_save_workflow():
     with patch('process_Abacus.CompaSOHaloCatalog') as mock_CompaSO, \
          patch('process_Abacus.glob.glob') as mock_glob:
         
-        # Set up the mock catalog
-        mock_catalog = MagicMock()
-        mock_catalog.header = {
-            'BoxSizeHMpc': 500.0,
-            'ParticleMassHMsun': 1.0e10,
-            'H0': 70.0,
-            'VelZSpace_to_kms': 100.0
-        }
-        
-        # Create simple test data with astropy Columns
-        mock_catalog.halos = {
-            'N': Column(data=np.array([1000, 2000]), name='N'),
-            'x_L2com': Column(data=np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]), name='x_L2com'),
-            'v_L2com': Column(data=np.array([[0.1, 0.2, 0.3], [0.4, 0.5, 0.6]]), name='v_L2com'),
-            'npoutA': Column(data=np.array([2, 3]), name='npoutA'),
-            'sigmav3d_L2com': Column(data=np.array([200.0, 300.0]), name='sigmav3d_L2com')
-        }
-        
-        mock_catalog.subsamples = {
-            'pos': Column(data=np.random.rand(5, 3), name='pos'),
-            'vel': Column(data=np.random.rand(5, 3) * 0.1, name='vel')
-        }
-        
-        # Ensure the mock is returned for each slab
-        mock_CompaSO.return_value = mock_catalog
-        mock_glob.return_value = ["slab1.asdf"]
-        
         # Create and properly close the temp file before using it
         temp_file = tempfile.NamedTemporaryFile(suffix='.fits', delete=False)
-        temp_file.close()  # Close immediately to ensure it exists
+        temp_file.close()
         temp_filename = temp_file.name
         
         try:
@@ -239,7 +217,7 @@ def test_process_and_save_workflow():
             save_results_fits(results, temp_filename)
             halo_data, subsample_data = read_results_fits(temp_filename)
             
-            # Better assertions with more descriptive failure messages
+            # Multiple assertions that will all be checked
             pytest.assume(len(halo_data) > 0, "No halo data was returned")
             pytest.assume(len(subsample_data) > 0, "No subsample data was returned")
             
