@@ -40,4 +40,4 @@ jobs:
         PYTHONPATH: .src
       run: pytest --cov=src tests/
     - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@main
