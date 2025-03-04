@@ -1,4 +1,5 @@
 import pytest
+from pytest_assume.plugin import assume
 import numpy as np
 from unittest.mock import patch, MagicMock
 import os
