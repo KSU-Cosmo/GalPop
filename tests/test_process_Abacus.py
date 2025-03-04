@@ -136,31 +136,26 @@ def test_process_Abacus_directory(mock_process_slab, mock_glob, mock_results):
     if len(result['subsample']['mass']) != len(mock_results['subsample']['mass']) * 2:
         raise ValueError("Unexpected length of subsample mass array")
 
+def _validate_fits_data(halo_data, subsample_data, mock_results):
+    """Validate the data read from FITS file matches expected results"""
+    if len(halo_data) != len(mock_results['halo']['mass']):
+        raise ValueError("Halo data length mismatch")
+    if len(subsample_data) != len(mock_results['subsample']['mass']):
+        raise ValueError("Subsample data length mismatch")
+    
+    if not np.array_equal(halo_data['mass'], mock_results['halo']['mass']):
+        raise ValueError("Halo mass arrays do not match")
+    if not np.array_equal(subsample_data['mass'], mock_results['subsample']['mass']):
+        raise ValueError("Subsample mass arrays do not match")
+
 def test_save_and_read_fits(mock_results):
     """Test saving and reading results to/from FITS file"""
-    with tempfile.NamedTemporaryFile(suffix='.fits', delete=False) as temp_file:
-        temp_file.flush()
+    with tempfile.NamedTemporaryFile(suffix='.fits', delete=True) as temp_file:
         temp_filename = temp_file.name
-    finally:
-        temp_file.close()
-    try:
         save_results_fits(mock_results, temp_filename)
         
         if not os.path.exists(temp_filename):
             raise ValueError("FITS file was not created")
         
         halo_data, subsample_data = read_results_fits(temp_filename)
-        
-        if len(halo_data) != len(mock_results['halo']['mass']):
-            raise ValueError("Halo data length mismatch")
-        if len(subsample_data) != len(mock_results['subsample']['mass']):
-            raise ValueError("Subsample data length mismatch")
-        
-        if not np.array_equal(halo_data['mass'], mock_results['halo']['mass']):
-            raise ValueError("Halo mass arrays do not match")
-        if not np.array_equal(subsample_data['mass'], mock_results['subsample']['mass']):
-            raise ValueError("Subsample mass arrays do not match")
-        
-    finally:
-        if os.path.exists(temp_filename):
-            os.unlink(temp_filename)
+        _validate_fits_data(halo_data, subsample_data, mock_results)
