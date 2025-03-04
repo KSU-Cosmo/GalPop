@@ -226,8 +226,10 @@ def test_process_and_save_workflow():
         mock_CompaSO.return_value = mock_catalog
         mock_glob.return_value = ["slab1.asdf"]
         
-        with tempfile.NamedTemporaryFile(suffix='.fits', delete=False) as temp_file:
-            temp_filename = temp_file.name
+        # Create and properly close the temp file before using it
+        temp_file = tempfile.NamedTemporaryFile(suffix='.fits', delete=False)
+        temp_file.close()  # Close immediately to ensure it exists
+        temp_filename = temp_file.name
         
         try:
             # Process the directory
@@ -237,15 +239,9 @@ def test_process_and_save_workflow():
             print(f"Halo data length: {len(results['halo']['mass'])}")
             print(f"Subsample data length: {len(results['subsample']['mass'])}")
             
-            # Save the results
-            print("Saving results...")
+            # Save and read results using temp_filename
             save_results_fits(results, temp_filename)
-            
-            # Read the results back
-            print("Reading results...")
             halo_data, subsample_data = read_results_fits(temp_filename)
-            print(f"Read halo data length: {len(halo_data)}")
-            print(f"Read subsample data length: {len(subsample_data)}")
             
             # Check we got something back
             assert len(halo_data) > 0
