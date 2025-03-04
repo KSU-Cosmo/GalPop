@@ -3,6 +3,7 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/bce28a3599604d0fab140839d8965a45)](https://app.codacy.com/gh/KSU-Cosmo/GalPop/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
 # GalPop
+
 Code base for population Nbody simulations with galaxies
 
 The main data structure is the following dictionary:

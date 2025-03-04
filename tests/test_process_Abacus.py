@@ -52,8 +52,7 @@ def mock_compaso_catalog():
     mock_cat.subsamples = {
         'pos': Column(name='SubhaloPositions', data=np.random.rand(20, 3)),  # Random positions for subhalos
         'vel': Column(name='SubhaloVelocities', data=np.random.rand(20, 3) * 0.1)  # Random velocities for subhalos
-    }
-    
+    } 
     return mock_cat
 
 @pytest.fixture
@@ -140,7 +139,7 @@ def test_save_and_read_fits(mock_results):
         temp_filename = temp_file.name
         save_results_fits(mock_results, temp_filename)
         temp_file.close()
-        
+
         if not os.path.exists(temp_filename):
             raise ValueError("FITS file was not created")
         

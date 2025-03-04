@@ -41,7 +41,6 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
     # Calculate halo masses and apply mass threshold
     Mh = Mpart * cat.halos["N"]
     Hmask = (Mh > pow(10, Mhlow))
-    
     # Create arrays for host properties
     host_masses = np.repeat(Mh, cat.halos["npoutA"])
     host_zvel = np.repeat(cat.halos['v_L2com'][:,2], cat.halos["npoutA"])
