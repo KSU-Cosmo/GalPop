@@ -4,7 +4,6 @@ from unittest.mock import patch, MagicMock
 import os
 import sys
 import tempfile
-from astropy.io import fits
 from astropy.table import Column
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
@@ -23,7 +22,7 @@ from process_Abacus import (
 def mock_compaso_catalog():
     """Create a mock CompaSOHaloCatalog for testing"""
     mock_cat = MagicMock()
-    
+
     # Set up header
     mock_cat.header = {
         'BoxSizeHMpc': 500.0,
