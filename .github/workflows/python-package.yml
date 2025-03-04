@@ -40,7 +40,7 @@ jobs:
         PYTHONPATH: .src
       run: pytest --cov-branch --cov-report=xml tests/
     - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v5
+      uses: codecov/codecov-action@main
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         slug: KSU-Cosmo/GalPop
