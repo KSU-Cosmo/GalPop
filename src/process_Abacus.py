@@ -57,7 +57,6 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
         'velocity': cat.halos['v_L2com'][Hmask, 2].value * inv_velz2kms,
         'sigma': np.sqrt(cat.halos['sigmav3d_L2com'][Hmask]).value * inv_velz2kms
     }
-    
     # Extract and scale subsample properties
     subsample_props = {
         'mass': host_masses[Smask].value,
