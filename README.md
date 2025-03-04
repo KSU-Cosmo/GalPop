@@ -1,3 +1,5 @@
+[![Python package](https://github.com/KSU-Cosmo/GalPop/actions/workflows/python-package.yml/badge.svg)](https://github.com/KSU-Cosmo/GalPop/actions/workflows/python-package.yml)
+
 # GalPop
 Code base for population Nbody simulations with galaxies
 
