@@ -48,7 +48,6 @@ def mock_compaso_catalog():
         'npoutA': Column(name='SatelliteCounts', data=[3, 5, 10, 2]),  # Number of satellites per halo
         'sigmav3d_L2com': Column(name='VelocityDispersion', data=[100.0, 200.0, 300.0, 50.0])  # 3D velocity dispersion
     }
-    
     # Set up subsamples
     mock_cat.subsamples = {
         'pos': Column(name='SubhaloPositions', data=np.random.rand(20, 3)),  # Random positions for subhalos
@@ -90,7 +89,7 @@ def test_process_Abacus_slab(mock_CompaSO, mock_compaso_catalog):
     result = process_Abacus_slab("dummy_slab.asdf", 12.0, 12.5, 5)
     
     _validate_result_structure(result)
-    _validate_required_fields(result['halo'], 
+    _validate_required_fields(result['halo'],
                             ['mass', 'x', 'y', 'z', 'sigma', 'velocity'],
                             'halo')
     _validate_required_fields(result['subsample'],

@@ -38,7 +38,6 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
     # Extract scaling factors from header
     Mpart = cat.header['ParticleMassHMsun']
     inv_velz2kms = 1 / (cat.header['VelZSpace_to_kms'] / cat.header['BoxSizeHMpc'])
-    
     # Calculate halo masses and apply mass threshold
     Mh = Mpart * cat.halos["N"]
     Hmask = (Mh > pow(10, Mhlow))
