@@ -35,7 +35,6 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
         fields=['N', 'x_L2com', 'v_L2com', 'npstartA', 'npoutA', 'sigmav3d_L2com'],
         cleaned=True,
     )
-    
     # Extract scaling factors from header
     Mpart = cat.header['ParticleMassHMsun']
     inv_velz2kms = 1 / (cat.header['VelZSpace_to_kms'] / cat.header['BoxSizeHMpc'])
