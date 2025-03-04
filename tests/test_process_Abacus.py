@@ -30,7 +30,6 @@ def mock_compaso_catalog():
         'H0': 70.0,
         'VelZSpace_to_kms': 100.0
     }
-    
     # Set up halos (4 halos, 2 will pass the mass threshold)
     mock_cat.halos = {
         'N': Column(name='ParticleCounts', data=[100, 1000, 10000, 50]),  # Particle counts
@@ -142,7 +141,8 @@ def test_save_and_read_fits(mock_results):
     with tempfile.NamedTemporaryFile(suffix='.fits', delete=False) as temp_file:
         temp_file.flush()
         temp_filename = temp_file.name
-    
+    finally:
+        temp_file.close()
     try:
         save_results_fits(mock_results, temp_filename)
         
