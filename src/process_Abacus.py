@@ -50,7 +50,7 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
     host_zvel = np.repeat(cat.halos['v_L2com'][:,2], cat.halos["npoutA"])
     
     # Create combined mask for subhalo selection
-    sub_count_mask = np.concatenate([np.concatenate((np.ones(min(n, maxsats)), 
+    sub_count_mask = np.concatenate([np.concatenate((np.ones(min(n, maxsats)),
                      np.zeros(max(n - maxsats, 0)))) for n in cat.halos["npoutA"]])
     Smask = np.logical_and(host_masses > pow(10, Mslow), sub_count_mask.astype(bool))
     
@@ -121,7 +121,7 @@ def process_Abacus_directory(dir_path, Mhlow, Mslow, maxsats):
             for category in result:
                 for key in result[category]:
                     result[category][key] = np.append(
-                        result[category][key], 
+                        result[category][key],
                         slab_result[category][key]
                     )
         except Exception as e:
@@ -178,12 +178,12 @@ def read_results_fits(filename):
     """
     hdul = fits.open(filename)
 
-    # Access halo data 
+    # Access halo data
     halo_data = hdul['halo'].data
     print(f"Number of halos: {len(halo_data)}")
 
     # Access subsample data
-    subsample_data = hdul['subsample'].data  
+    subsample_data = hdul['subsample'].data
     print(f"Number of subsamples: {len(subsample_data)}")
     
     return halo_data, subsample_data
@@ -201,10 +201,10 @@ def main():
     # Mhlow = 12.5       # Minimum log10 halo mass
     # Mslow = 13.5       # Minimum log10 subhalo host mass
     # maxsats = 25       # Maximum satellites per host
-    # 
+    #
     # results = process_Abacus_directory(dir_path, Mhlow, Mslow, maxsats)
     # save_results_fits(results, "abacus_results.fits")
-    # 
+    #
     # # Later, to read the data:
     # halo_data, subsample_data = read_results_fits("abacus_results.fits")
     pass
