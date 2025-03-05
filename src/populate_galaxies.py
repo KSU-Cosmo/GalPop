@@ -7,10 +7,12 @@ def populate_galaxies(h, s, HODparams, rsd=True):
     
     Parameters:
     -----------
-    data_dict : dict
-        Dictionary containing halo and subsample data with keys:
-        - 'halo': {'mass', 'x', 'y', 'z', 'sigma', 'velocity'}
-        - 'subsample': {'mass', 'host_velocity', 'n_particles', 'x', 'y', 'z', 'velocity'}
+    h : dict
+        Dictionary containing halo data with keys:
+        {'mass', 'x', 'y', 'z', 'sigma', 'velocity'}
+    s : dict
+        Dictionary containing subsample data with keys:
+        {'mass', 'host_velocity', 'n_particles', 'x', 'y', 'z', 'velocity'}
     HODparams : list or tuple
         List of HOD parameters [lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s].
         The default values for velocity bias are alpha_c = 0, alpha_s = 1.
