@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 
-def populate_galaxies(data_dict, HODparams):
+def populate_galaxies(data_dict, HODparams, rsd=True):
     """
     Generate galaxies based on halo and subsample data using Halo Occupation Distribution (HOD) parameters.
     
@@ -12,8 +12,10 @@ def populate_galaxies(data_dict, HODparams):
         - 'halo': {'mass', 'x', 'y', 'z', 'sigma', 'velocity'}
         - 'subsample': {'mass', 'host_velocity', 'n_particles', 'x', 'y', 'z', 'velocity'}
     HODparams : list or tuple
-        List of HOD parameters [lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s]
-    
+        List of HOD parameters [lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s].
+        The default values for velocity bias are alpha_c = 0, alpha_s = 1.
+    rsd : bool
+        True by default. Whether or not to apply the rsd correction.
     Returns:
     --------
     tuple of numpy arrays
@@ -24,6 +26,7 @@ def populate_galaxies(data_dict, HODparams):
     xh = np.asarray(data_dict['halo']['x'], dtype=np.float64)
     yh = np.asarray(data_dict['halo']['y'], dtype=np.float64)
     zh = np.asarray(data_dict['halo']['z'], dtype=np.float64)
+    vh = np.asarray(data_dict['halo']['velocity'], dtype=np.float64)
     sh = np.asarray(data_dict['halo']['sigma'], dtype=np.float64)
     
     # Unpack subsample data and ensure float64 type
@@ -51,9 +54,6 @@ def populate_galaxies(data_dict, HODparams):
     n_sat[n_sat < 0] = 0
     n_sat = n_sat**alpha * p_cen_sat
     
-    # Add scatter to z-coordinate of central galaxies
-    zh += alpha_c * np.random.normal(0, sh, len(Mh))
-    
     # Select central galaxies
     random_value = np.random.rand(*p_cen.shape)
     Hmask = random_value < p_cen
@@ -65,6 +65,10 @@ def populate_galaxies(data_dict, HODparams):
     random_value = np.random.rand(*n_sat.shape)
     Smask = random_value < n_sat/ns
     
+    if rsd:
+        zh += vh + alpha_c * np.random.normal(0, sh, len(Mh))
+        zs += vhost + alpha_s * (vs - vhost)
+
     # Return concatenated coordinates of central and satellite galaxies
     return (
         np.concatenate((xh[Hmask], xs[Smask])),
