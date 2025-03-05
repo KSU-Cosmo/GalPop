@@ -37,7 +37,7 @@ def test_populate_galaxies():
     ]
     
     # Call the populate_galaxies function
-    x_galaxies, y_galaxies, z_galaxies = populate_galaxies(mock_data_dict, hod_params)
+    x_galaxies, y_galaxies, z_galaxies = pg.populate_galaxies(mock_data_dict, hod_params)
     
     # 1. Check that the output arrays have the same length
     assert len(x_galaxies) == len(y_galaxies)
