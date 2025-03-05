@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 
-def generate_galaxies(data_dict, HODparams):
+def populate_galaxies(data_dict, HODparams):
     """
     Generate galaxies based on halo and subsample data using Halo Occupation Distribution (HOD) parameters.
     
