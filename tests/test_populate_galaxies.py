@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
 
+import populate_galaxies as pg
+
 def test_populate_galaxies():
     # Create a mock input dictionary with test data
     mock_data_dict = {
@@ -62,9 +64,9 @@ def test_populate_galaxies():
     
     # 5. Reproducibility check (with fixed random seed)
     np.random.seed(42)
-    x1, y1, z1 = populate_galaxies(mock_data_dict, hod_params)
+    x1, y1, z1 = pg.populate_galaxies(mock_data_dict, hod_params)
     np.random.seed(42)
-    x2, y2, z2 = populate_galaxies(mock_data_dict, hod_params)
+    x2, y2, z2 = pg.populate_galaxies(mock_data_dict, hod_params)
     
     # Check that results are reproducible when random seed is the same
     np.testing.assert_array_equal(x1, x2)
@@ -104,7 +106,7 @@ def test_populate_galaxies_edge_cases():
     ]
     
     # This should not raise an error
-    x_galaxies, y_galaxies, z_galaxies = populate_galaxies(mock_data_dict, hod_params)
+    x_galaxies, y_galaxies, z_galaxies = pg.populate_galaxies(mock_data_dict, hod_params)
     
     # Additional checks for low mass case
     assert len(x_galaxies) >= 0  # Can be zero or more
