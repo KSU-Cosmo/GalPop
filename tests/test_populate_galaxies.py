@@ -15,7 +15,8 @@ def test_populate_galaxies():
             'x': np.array([0, 10, 20]),  # x coordinates
             'y': np.array([0, 10, 20]),  # y coordinates
             'z': np.array([0, 10, 20]),  # z coordinates
-            'sigma': np.array([0.2, 0.3, 0.4])  # sigma values
+            'sigma': np.array([0.2, 0.3, 0.4]),  # sigma values
+            'velocity': np.array([10, 20, 30])  # Velocities
         },
         'subsample': {
             'mass': np.array([1e14, 2e14, 3e14]),  # Subsample masses
