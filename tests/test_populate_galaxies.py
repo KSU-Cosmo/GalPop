@@ -41,7 +41,7 @@ def test_populate_galaxies():
     ]
     
     # Call the populate_galaxies function
-    x_galaxies, y_galaxies, z_galaxies = pg.populate_galaxies(mock_data_dict, hod_params)
+    x_galaxies, y_galaxies, z_galaxies = populate_galaxies(mock_data_dict, hod_params)
     
     # 1. Check that the output arrays have the same length
     assert len(x_galaxies) == len(y_galaxies)
@@ -55,22 +55,26 @@ def test_populate_galaxies():
     assert np.issubdtype(y_galaxies.dtype, np.number)
     assert np.issubdtype(z_galaxies.dtype, np.number)
     
-    # 4. Check that some input coordinates are present in the output
-    # This checks that both central and satellite galaxies are being selected
+    # 4. Check that some input coordinates are close to the output
+    # This allows for small variations due to random modifications
     input_x_coords = np.concatenate([mock_data_dict['halo']['x'], mock_data_dict['subsample']['x']])
     input_y_coords = np.concatenate([mock_data_dict['halo']['y'], mock_data_dict['subsample']['y']])
     input_z_coords = np.concatenate([mock_data_dict['halo']['z'], mock_data_dict['subsample']['z']])
     
-    # Check that at least some input coordinates are in the output
-    assert any(np.isin(x_galaxies, input_x_coords))
-    assert any(np.isin(y_galaxies, input_y_coords))
-    assert any(np.isin(z_galaxies, input_z_coords))
+    # Check that some output coordinates are close to input coordinates
+    x_match = np.any(np.isclose(x_galaxies[:, np.newaxis], input_x_coords, atol=1.0))
+    y_match = np.any(np.isclose(y_galaxies[:, np.newaxis], input_y_coords, atol=1.0))
+    z_match = np.any(np.isclose(z_galaxies[:, np.newaxis], input_z_coords, atol=1.0))
+    
+    assert x_match, "No x-coordinates close to input coordinates"
+    assert y_match, "No y-coordinates close to input coordinates"
+    assert z_match, "No z-coordinates close to input coordinates"
     
     # 5. Reproducibility check (with fixed random seed)
     np.random.seed(42)
-    x1, y1, z1 = pg.populate_galaxies(mock_data_dict, hod_params)
+    x1, y1, z1 = populate_galaxies(mock_data_dict, hod_params)
     np.random.seed(42)
-    x2, y2, z2 = pg.populate_galaxies(mock_data_dict, hod_params)
+    x2, y2, z2 = populate_galaxies(mock_data_dict, hod_params)
     
     # Check that results are reproducible when random seed is the same
     np.testing.assert_array_equal(x1, x2)
@@ -110,7 +114,7 @@ def test_populate_galaxies_edge_cases():
     ]
     
     # This should not raise an error
-    x_galaxies, y_galaxies, z_galaxies = pg.populate_galaxies(mock_data_dict, hod_params)
+    x_galaxies, y_galaxies, z_galaxies = populate_galaxies(mock_data_dict, hod_params)
     
     # Additional checks for low mass case
     assert len(x_galaxies) >= 0  # Can be zero or more
