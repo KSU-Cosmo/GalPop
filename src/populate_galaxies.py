@@ -50,7 +50,7 @@ def populate_galaxies(h, s, HODparams, rsd=True):
     p_cen_sat = 0.5 * sp.special.erfc((np.log10(Mcut/Ms)) / np.sqrt(2) / sigma)
     
     # Number of satellite galaxies
-    n_sat = ((Ms - Mcut) / M1)
+    n_sat = ((Ms - kappa*Mcut) / M1)
     n_sat[n_sat < 0] = 0
     n_sat = n_sat**alpha * p_cen_sat
     
