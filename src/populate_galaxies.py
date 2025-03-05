@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 
-def populate_galaxies(data_dict, HODparams, rsd=True):
+def populate_galaxies(h, s, HODparams, rsd=True):
     """
     Generate galaxies based on halo and subsample data using Halo Occupation Distribution (HOD) parameters.
     
@@ -22,21 +22,21 @@ def populate_galaxies(data_dict, HODparams, rsd=True):
         (x_galaxies, y_galaxies, z_galaxies)
     """
     # Unpack halo data and ensure float64 type
-    Mh = np.asarray(data_dict['halo']['mass'], dtype=np.float64)
-    xh = np.asarray(data_dict['halo']['x'], dtype=np.float64)
-    yh = np.asarray(data_dict['halo']['y'], dtype=np.float64)
-    zh = np.asarray(data_dict['halo']['z'], dtype=np.float64)
-    vh = np.asarray(data_dict['halo']['velocity'], dtype=np.float64)
-    sh = np.asarray(data_dict['halo']['sigma'], dtype=np.float64)
+    Mh = np.asarray(h['mass'], dtype=np.float64)
+    xh = np.asarray(h['x'], dtype=np.float64)
+    yh = np.asarray(h['y'], dtype=np.float64)
+    zh = np.asarray(h['z'], dtype=np.float64)
+    vh = np.asarray(h['velocity'], dtype=np.float64)
+    sh = np.asarray(h['sigma'], dtype=np.float64)
     
     # Unpack subsample data and ensure float64 type
-    Ms = np.asarray(data_dict['subsample']['mass'], dtype=np.float64)
-    vhost = np.asarray(data_dict['subsample']['host_velocity'], dtype=np.float64)
-    ns = np.asarray(data_dict['subsample']['n_particles'], dtype=np.float64)
-    xs = np.asarray(data_dict['subsample']['x'], dtype=np.float64)
-    ys = np.asarray(data_dict['subsample']['y'], dtype=np.float64)
-    zs = np.asarray(data_dict['subsample']['z'], dtype=np.float64)
-    vs = np.asarray(data_dict['subsample']['velocity'], dtype=np.float64)
+    Ms = np.asarray(s['mass'], dtype=np.float64)
+    vhost = np.asarray(s['host_velocity'], dtype=np.float64)
+    ns = np.asarray(s['n_particles'], dtype=np.float64)
+    xs = np.asarray(s['x'], dtype=np.float64)
+    ys = np.asarray(s['y'], dtype=np.float64)
+    zs = np.asarray(s['z'], dtype=np.float64)
+    vs = np.asarray(s['velocity'], dtype=np.float64)
     
     # Unpack HOD parameters
     lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s = HODparams
