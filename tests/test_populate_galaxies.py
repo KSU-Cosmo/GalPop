@@ -90,7 +90,8 @@ def test_populate_galaxies_edge_cases():
             'x': np.array([0, 10]),
             'y': np.array([0, 10]),
             'z': np.array([0, 10]),
-            'sigma': np.array([0.2, 0.3])
+            'sigma': np.array([0.2, 0.3]),
+            'velocity': np.array([10, 20])
         },
         'subsample': {
             'mass': np.array([1e11, 1e12]),
