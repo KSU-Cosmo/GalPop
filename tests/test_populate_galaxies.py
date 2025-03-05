@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
 
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src')))
+
 import populate_galaxies as pg
 
 def test_populate_galaxies():
