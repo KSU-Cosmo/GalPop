@@ -1,7 +1,7 @@
 import numpy as np
 import scipy as sp
 
-def populate_galaxies(h, s, HODparams, rsd=True):
+def populate_galaxies(h, s, HODparams, rsd=True, Lmin=-1000, Lmax=1000):
     """
     Generate galaxies based on halo and subsample data using Halo Occupation Distribution (HOD) parameters.
     
@@ -67,6 +67,11 @@ def populate_galaxies(h, s, HODparams, rsd=True):
     if rsd:
         zh += vh + alpha_c * np.random.normal(0, sh, len(Mh))
         zs += vhost + alpha_s * (vs - vhost)
+        Lbox = Lmax - Lmin
+        zh[zh < Lmin] += Lbox
+        zs[zs < Lmin] += Lbox
+        zh[zh > Lmax] -= Lbox
+        zs[zs > Lmax] -= Lbox
 
     # Return concatenated coordinates of central and satellite galaxies
     return (
