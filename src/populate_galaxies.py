@@ -15,13 +15,25 @@ def populate_galaxies(h, s, HODparams, rsd=True, Lmin=-1000, Lmax=1000):
         {'mass', 'host_velocity', 'n_particles', 'x', 'y', 'z', 'velocity'}
     HODparams : list or tuple
         List of HOD parameters [lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s].
-        The default values for velocity bias are alpha_c = 0, alpha_s = 1.
-    rsd : bool
-        True by default. Whether or not to apply the rsd correction.
+        - lnMcut: Log10 of the minimum mass for a halo to host a central galaxy
+        - sigma: Scatter in the minimum mass threshold
+        - lnM1: Log10 of the characteristic mass for satellite galaxies
+        - kappa: Factor relating central and satellite cutoff masses
+        - alpha: Power-law slope of the satellite occupation function
+        - alpha_c: Velocity bias parameter for central galaxies (only used when rsd=True)
+        - alpha_s: Velocity bias parameter for satellite galaxies (only used when rsd=True)
+    rsd : bool, optional
+        Whether to apply redshift-space distortion corrections. Default is True.
+    Lmin : float, optional
+        Minimum coordinate value of the simulation box. Default is -1000.
+    Lmax : float, optional
+        Maximum coordinate value of the simulation box. Default is 1000.
+        
     Returns:
     --------
-    tuple of numpy arrays
-        (x_galaxies, y_galaxies, z_galaxies)
+    dict
+        Dictionary containing galaxy positions with keys:
+        {'x', 'y', 'z'} where each value is a numpy array of galaxy positions
     """
     # Unpack halo data and ensure float64 type
     Mh = np.asarray(h['mass'], dtype=np.float64)
@@ -64,18 +76,23 @@ def populate_galaxies(h, s, HODparams, rsd=True, Lmin=-1000, Lmax=1000):
     random_value = np.random.rand(*n_sat.shape)
     Smask = random_value < n_sat/ns
     
+    # Copy positions before applying RSD
+    zh_rsd = zh.copy()
+    zs_rsd = zs.copy()
+    
     if rsd:
-        zh += vh + alpha_c * np.random.normal(0, sh, len(Mh))
-        zs += vhost + alpha_s * (vs - vhost)
+        # Apply redshift-space distortions using velocity bias parameters
         Lbox = Lmax - Lmin
-        zh[zh < Lmin] += Lbox
-        zs[zs < Lmin] += Lbox
-        zh[zh > Lmax] -= Lbox
-        zs[zs > Lmax] -= Lbox
+        zh_rsd += vh + alpha_c * np.random.normal(0, sh, len(Mh))
+        zs_rsd += vhost + alpha_s * (vs - vhost)
+        
+        # Implement periodic boundary conditions using vectorized operations
+        zh_rsd = np.mod(zh_rsd - Lmin, Lbox) + Lmin
+        zs_rsd = np.mod(zs_rsd - Lmin, Lbox) + Lmin
 
-    # Return concatenated coordinates of central and satellite galaxies
-    return (
-        np.concatenate((xh[Hmask], xs[Smask])),
-        np.concatenate((yh[Hmask], ys[Smask])),
-        np.concatenate((zh[Hmask], zs[Smask]))
-    )
+    # Return dictionary of galaxy positions
+    return {
+        'x': np.concatenate((xh[Hmask], xs[Smask])),
+        'y': np.concatenate((yh[Hmask], ys[Smask])),
+        'z': np.concatenate((zh_rsd[Hmask], zs_rsd[Smask]))
+    }
