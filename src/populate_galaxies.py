@@ -60,9 +60,6 @@ def populate_galaxies(h, s, HODparams, rsd=True):
     random_value = np.random.rand(*p_cen.shape)
     Hmask = random_value < p_cen
     
-    # Adjust satellite galaxy velocities
-    zs += vhost + alpha_s * (zs - vhost)
-    
     # Select satellite galaxies
     random_value = np.random.rand(*n_sat.shape)
     Smask = random_value < n_sat/ns
