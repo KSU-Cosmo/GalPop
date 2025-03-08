@@ -75,8 +75,8 @@ def populate_galaxies(h, s, HODparams, rsd=True, Lmin=-1000, Lmax=1000):
 
     print(np.sum(zh < Lmin))
     print(np.sum(zs < Lmin))
-    print(np.sum(zh > Lmin))
-    print(np.sum(zs > Lmin))    
+    print(np.sum(zh > Lmax))
+    print(np.sum(zs > Lmax))    
 
     # Return concatenated coordinates of central and satellite galaxies
     return (
