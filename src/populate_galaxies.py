@@ -76,19 +76,15 @@ def populate_galaxies(h, s, HODparams, rsd=True, Lmin=-1000, Lmax=1000):
     random_value = np.random.rand(*n_sat.shape)
     Smask = random_value < n_sat/ns
     
-    # Copy positions before applying RSD
-    zh_rsd = zh.copy()
-    zs_rsd = zs.copy()
+if rsd:
+    # Apply redshift-space distortions using velocity bias parameters
+    Lbox = Lmax - Lmin
+    zh = zh + vh + alpha_c * np.random.normal(0, sh, len(Mh))
+    zs = zs + vhost + alpha_s * (vs - vhost)
     
-    if rsd:
-        # Apply redshift-space distortions using velocity bias parameters
-        Lbox = Lmax - Lmin
-        zh_rsd += vh + alpha_c * np.random.normal(0, sh, len(Mh))
-        zs_rsd += vhost + alpha_s * (vs - vhost)
-        
-        # Implement periodic boundary conditions using vectorized operations
-        zh_rsd = np.mod(zh_rsd - Lmin, Lbox) + Lmin
-        zs_rsd = np.mod(zs_rsd - Lmin, Lbox) + Lmin
+    # Implement periodic boundary conditions using vectorized operations
+    zh = np.mod(zh - Lmin, Lbox) + Lmin
+    zs = np.mod(zs - Lmin, Lbox) + Lmin
 
     # Return dictionary of galaxy positions
     return {
