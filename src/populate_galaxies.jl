@@ -23,40 +23,74 @@ function populate_galaxies_julia(
     lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s,
     rsd::Bool, Lmin::Float64, Lmax::Float64
 )
-    # Calculate parameters
-    Mcut = 10.0^lnMcut
-    M1 = 10.0^lnM1
+    # Pre-allocate results to avoid multiple concatenations
+    total_length = length(h_mass) + length(s_mass)
+    x_gal = Vector{Float64}(undef, total_length)
+    y_gal = Vector{Float64}(undef, total_length)
+    z_gal = Vector{Float64}(undef, total_length)
+    
+    # Calculate parameters once
+    Mcut = exp10(lnMcut)
+    M1 = exp10(lnM1)
     Lbox = Lmax - Lmin
+    sqrt2sigma = sqrt(2) * sigma
     
-    # Probability of central galaxies
-    p_cen = 0.5 .* erfc.((log10.(Mcut ./ h_mass)) ./ (sqrt(2) * sigma))
-    p_cen_sat = 0.5 .* erfc.((log10.(Mcut ./ s_mass)) ./ (sqrt(2) * sigma))
+    # Process central galaxies
+    log_ratio_h = log10.(Mcut ./ h_mass)
+    p_cen = 0.5 .* erfc.(log_ratio_h ./ sqrt2sigma)
     
-    # Number of satellite galaxies
-    n_sat = ((s_mass .- kappa*Mcut) ./ M1)
-    n_sat[n_sat .< 0] .= 0
-    n_sat = n_sat.^alpha .* p_cen_sat
-    
-    # Select central galaxies using random sampling
-    Hmask = rand(length(p_cen)) .< p_cen
-    
-    # Select satellite galaxies using random sampling
-    Smask = rand(length(n_sat)) .< n_sat ./ s_n_particles
-    
-    if rsd
-        # Apply redshift-space distortions
-        h_z .+= h_velocity .+ alpha_c .* randn(length(h_mass)) .* h_sigma
-        h_s .+= s_host_velocity .+ alpha_s .* (s_velocity .- s_host_velocity)
-        
-        # Apply periodic boundary conditions
-        h_z.= mod.(h_z .- Lmin, Lbox) .+ Lmin
-        h_s .= mod.(h_s .- Lmin, Lbox) .+ Lmin
+    # Use more efficient method to count selected elements
+    h_count = 0
+    @inbounds for i in 1:length(p_cen)
+        if rand() < p_cen[i]
+            h_count += 1
+            x_gal[h_count] = h_x[i]
+            y_gal[h_count] = h_y[i]
+            
+            if rsd
+                # Apply RSD inline for centrals
+                z_val = h_z[i] + h_velocity[i] + alpha_c * randn() * h_sigma[i]
+                # Apply periodic boundary inline
+                z_gal[h_count] = mod(z_val - Lmin, Lbox) + Lmin
+            else
+                z_gal[h_count] = h_z[i]
+            end
+        end
     end
     
-    # Select galaxies using the masks
-    x_gal = vcat(h_x[Hmask], s_x[Smask])
-    y_gal = vcat(h_y[Hmask], s_y[Smask])
-    z_gal = vcat(zh[Hmask], zs[Smask])
+    # Process satellite galaxies
+    log_ratio_s = log10.(Mcut ./ s_mass)
+    p_cen_sat = 0.5 .* erfc.(log_ratio_s ./ sqrt2sigma)
+    
+    # Calculate n_sat more efficiently
+    s_count = h_count
+    @inbounds for i in 1:length(s_mass)
+        mass_diff = s_mass[i] - kappa * Mcut
+        if mass_diff > 0
+            n_sat_i = (mass_diff / M1)^alpha * p_cen_sat[i]
+            prob = n_sat_i / s_n_particles[i]
+            
+            if rand() < prob
+                s_count += 1
+                x_gal[s_count] = s_x[i]
+                y_gal[s_count] = s_y[i]
+                
+                if rsd
+                    # Apply RSD inline for satellites
+                    z_val = s_z[i] + s_host_velocity[i] + alpha_s * (s_velocity[i] - s_host_velocity[i])
+                    # Apply periodic boundary inline
+                    z_gal[s_count] = mod(z_val - Lmin, Lbox) + Lmin
+                else
+                    z_gal[s_count] = s_z[i]
+                end
+            end
+        end
+    end
+    
+    # Resize arrays to actual count
+    resize!(x_gal, s_count)
+    resize!(y_gal, s_count)
+    resize!(z_gal, s_count)
     
     return x_gal, y_gal, z_gal
 end
