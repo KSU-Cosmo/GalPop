@@ -94,11 +94,25 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
     # Final mask is the intersection of all_particles_mask and sub_count_mask
     Smask = np.logical_and(all_particles_mask, sub_count_mask)
     
+    # For each valid host, get the larger of n_particles and maxsats
+    # We'll create an array to map each subsample back to its host index
+    host_idx_map = np.zeros(total_length, dtype=int)
+    for i in range(len(n_particles)):
+        start = cumul_particles[i]
+        end = cumul_particles[i+1]
+        host_idx_map[start:end] = i
+    
+    # Get host indices for selected subsamples
+    selected_host_indices = host_idx_map[Smask]
+    
+    # Get the larger of n_particles and maxsats for each selected host
+    larger_n_particles = np.maximum(n_particles[selected_host_indices], maxsats)
+    
     # Extract and scale subsample properties
     subsample_props = {
         'mass': host_masses[sub_count_mask[all_particles_mask]].value,
         'host_velocity': host_zvel[sub_count_mask[all_particles_mask]].value * inv_velz2kms,
-        'n_particles': np.repeat(n_particles[valid_hosts_indices], valid_n_particles)[sub_count_mask[all_particles_mask]].value,
+        'n_particles': larger_n_particles.value,  # Use the larger of n_particles and maxsats
         'x': cat.subsamples['pos'][Smask, 0].value,
         'y': cat.subsamples['pos'][Smask, 1].value,
         'z': cat.subsamples['pos'][Smask, 2].value,
