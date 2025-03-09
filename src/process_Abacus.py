@@ -106,13 +106,13 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
     selected_host_indices = host_idx_map[Smask]
     
     # Get the larger of n_particles and maxsats for each selected host
-    larger_n_particles = np.maximum(n_particles[selected_host_indices], maxsats)
+    smallest_n_particles = np.minimum(n_particles[selected_host_indices], maxsats)
     
     # Extract and scale subsample properties
     subsample_props = {
         'mass': host_masses[sub_count_mask[all_particles_mask]].value,
         'host_velocity': host_zvel[sub_count_mask[all_particles_mask]].value * inv_velz2kms,
-        'n_particles': larger_n_particles.value,  # Use the larger of n_particles and maxsats
+        'n_particles': smallest_n_particles.value,  # Use the larger of n_particles and maxsats
         'x': cat.subsamples['pos'][Smask, 0].value,
         'y': cat.subsamples['pos'][Smask, 1].value,
         'z': cat.subsamples['pos'][Smask, 2].value,
