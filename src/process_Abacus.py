@@ -28,26 +28,22 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
         Arrays within each category have the same length, but halo and subsample
         arrays may have different lengths from each other.
     """
-
+    # Load the catalog data
     cat = CompaSOHaloCatalog(
         slabname,
         subsamples=dict(A=True, rv=True),
         fields=['N', 'x_L2com', 'v_L2com', 'npstartA', 'npoutA', 'sigmav3d_L2com'],
         cleaned=True,
     )
+    
     # Extract scaling factors from header
     Mpart = cat.header['ParticleMassHMsun']
     inv_velz2kms = 1 / (cat.header['VelZSpace_to_kms'] / cat.header['BoxSizeHMpc'])
+    
     # Calculate halo masses and apply mass threshold
     Mh = Mpart * cat.halos["N"]
     Hmask = (Mh > pow(10, Mhlow))
-    # Create arrays for host properties
-    host_masses = np.repeat(Mh, cat.halos["npoutA"])
-    host_zvel = np.repeat(cat.halos['v_L2com'][:,2], cat.halos["npoutA"])
-    # Create combined mask for subhalo selection
-    sub_count_mask = np.concatenate([np.concatenate((np.ones(min(n, maxsats)),
-                     np.zeros(max(n - maxsats, 0)))) for n in cat.halos["npoutA"]])
-    Smask = np.logical_and(host_masses > pow(10, Mslow), sub_count_mask.astype(bool))
+    
     # Extract and scale halo properties
     halo_props = {
         'mass': Mh[Hmask].value,
@@ -57,11 +53,52 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
         'velocity': cat.halos['v_L2com'][Hmask, 2].value * inv_velz2kms,
         'sigma': np.sqrt(cat.halos['sigmav3d_L2com'][Hmask]).value * inv_velz2kms
     }
+    
+    # Vectorized approach for creating sub_count_mask
+    n_particles = cat.halos["npoutA"]
+    mask_lengths = np.minimum(n_particles, maxsats)
+    
+    # Calculate starting indices for each halo's satellites
+    start_indices = np.zeros(len(n_particles), dtype=int)
+    if len(n_particles) > 1:
+        start_indices[1:] = np.cumsum(n_particles[:-1])
+    
+    # Create the mask more efficiently
+    total_length = np.sum(n_particles)
+    sub_count_mask = np.zeros(total_length, dtype=bool)
+    
+    for i, (start, length) in enumerate(zip(start_indices, mask_lengths)):
+        sub_count_mask[start:start+length] = True
+    
+    # Create host property arrays more efficiently
+    # Only create for hosts that pass the mass threshold for subsamples
+    host_mass_filter = Mh > pow(10, Mslow)
+    
+    # Filter and repeat only the necessary host properties
+    valid_hosts_indices = np.where(host_mass_filter)[0]
+    valid_n_particles = n_particles[valid_hosts_indices]
+    
+    # Generate arrays only for valid hosts
+    host_masses = np.repeat(Mh[valid_hosts_indices], valid_n_particles)
+    host_zvel = np.repeat(cat.halos['v_L2com'][valid_hosts_indices, 2], valid_n_particles)
+    
+    # Calculate cumulative particle counts for indexing
+    cumul_particles = np.zeros(len(n_particles) + 1, dtype=int)
+    cumul_particles[1:] = np.cumsum(n_particles)
+    
+    # Create mask for all particles (from hosts passing threshold)
+    all_particles_mask = np.zeros(total_length, dtype=bool)
+    for i in valid_hosts_indices:
+        all_particles_mask[cumul_particles[i]:cumul_particles[i+1]] = True
+    
+    # Final mask is the intersection of all_particles_mask and sub_count_mask
+    Smask = np.logical_and(all_particles_mask, sub_count_mask)
+    
     # Extract and scale subsample properties
     subsample_props = {
-        'mass': host_masses[Smask].value,
-        'host_velocity': host_zvel[Smask].value * inv_velz2kms,
-        'n_particles': np.repeat(cat.halos["npoutA"], cat.halos["npoutA"])[Smask].value,
+        'mass': host_masses[sub_count_mask[all_particles_mask]].value,
+        'host_velocity': host_zvel[sub_count_mask[all_particles_mask]].value * inv_velz2kms,
+        'n_particles': np.repeat(n_particles[valid_hosts_indices], valid_n_particles)[sub_count_mask[all_particles_mask]].value,
         'x': cat.subsamples['pos'][Smask, 0].value,
         'y': cat.subsamples['pos'][Smask, 1].value,
         'z': cat.subsamples['pos'][Smask, 2].value,
@@ -92,9 +129,10 @@ def process_Abacus_directory(dir_path, Mhlow, Mslow, maxsats):
         Combined dictionary with halo and subsample data from all processed slabs
     """
     slablist = glob.glob(f"{dir_path}*.asdf")
+    total_slabs = len(slablist)
     
-    # Initialize the result dictionary with empty lists
-    result = {
+    # Initialize temporary storage for collecting arrays before concatenation
+    temp_results = {
         'halo': {
             'mass': [], 'x': [], 'y': [], 'z': [], 'sigma': [], 'velocity': []
         },
@@ -104,21 +142,54 @@ def process_Abacus_directory(dir_path, Mhlow, Mslow, maxsats):
         }
     }
     
+    # Track successfully processed slabs and failures
+    successful_slabs = 0
+    failed_slabs = []
+    
     # Process slabs
-    for slab in slablist:
-        print(f"Processing slab: {slab}")
+    for i, slab in enumerate(slablist):
+        print(f"Processing slab {i+1}/{total_slabs}: {slab}")
+        
         try:
             slab_result = process_Abacus_slab(slab, Mhlow, Mslow, maxsats)
             
-            # Append data from this slab to our results
-            for category in result:
-                for key in result[category]:
-                    result[category][key] = np.append(
-                        result[category][key],
-                        slab_result[category][key]
-                    )
+            # Append data from this slab to our temporary results
+            for category in temp_results:
+                for key in temp_results[category]:
+                    temp_results[category][key].append(slab_result[category][key])
+            
+            successful_slabs += 1
+            
+            # Print progress
+            print(f"  - Halos found: {len(slab_result['halo']['mass'])}")
+            print(f"  - Subsamples found: {len(slab_result['subsample']['mass'])}")
+            print(f"  - Progress: {successful_slabs}/{total_slabs} slabs processed successfully")
+            
         except Exception as e:
-            print(f"Error processing slab {slab}: {e}")
+            failed_slabs.append((slab, str(e)))
+            print(f"ERROR processing slab {slab}:")
+            print(f"  - {e}")
+    
+    # Consolidate results - concatenate arrays once at the end
+    result = {}
+    for category in temp_results:
+        result[category] = {}
+        for key in temp_results[category]:
+            if temp_results[category][key]:  # Only concatenate if there are arrays to combine
+                result[category][key] = np.concatenate(temp_results[category][key])
+            else:
+                result[category][key] = np.array([])
+    
+    # Report on processing results
+    print("\nProcessing Summary:")
+    print(f"  - Total slabs: {total_slabs}")
+    print(f"  - Successfully processed: {successful_slabs}")
+    print(f"  - Failed: {len(failed_slabs)}")
+    
+    if failed_slabs:
+        print("\nFailed slabs:")
+        for slab, error in failed_slabs:
+            print(f"  - {slab}: {error}")
     
     return result
 
@@ -152,6 +223,13 @@ def save_results_fits(results, filename):
     
     hdul.writeto(filename, overwrite=True)
     print(f"Results saved to {filename}")
+    
+    # Print summary of saved data
+    print("\nSaved Data Summary:")
+    for category in results:
+        if results[category]:
+            array_length = len(next(iter(results[category].values())))
+            print(f"  - {category.capitalize()}: {array_length} entries")
 
 
 def read_results_fits(filename):
