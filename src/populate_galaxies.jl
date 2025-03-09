@@ -43,18 +43,14 @@ function populate_galaxies_julia(
     # Select satellite galaxies using random sampling
     Smask = rand(length(n_sat)) .< n_sat ./ s_n_particles
     
-    # Apply RSD if requested
-    zh = copy(h_z)
-    zs = copy(s_z)
-    
     if rsd
         # Apply redshift-space distortions
-        zh .+= h_velocity .+ alpha_c .* randn(length(h_mass)) .* h_sigma
-        zs .+= s_host_velocity .+ alpha_s .* (s_velocity .- s_host_velocity)
+        h_z .+= h_velocity .+ alpha_c .* randn(length(h_mass)) .* h_sigma
+        h_s .+= s_host_velocity .+ alpha_s .* (s_velocity .- s_host_velocity)
         
         # Apply periodic boundary conditions
-        zh .= mod.(zh .- Lmin, Lbox) .+ Lmin
-        zs .= mod.(zs .- Lmin, Lbox) .+ Lmin
+        h_z.= mod.(h_z .- Lmin, Lbox) .+ Lmin
+        h_s .= mod.(h_s .- Lmin, Lbox) .+ Lmin
     end
     
     # Select galaxies using the masks
