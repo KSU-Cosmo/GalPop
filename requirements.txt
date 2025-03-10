@@ -1,5 +1,4 @@
-abacusutils # only necessary for AbacusSummit files
 numpy
+scipy
 astropy
-pytest-cov
-pytest-assume
+julia
