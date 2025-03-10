@@ -16,3 +16,4 @@ src/__pycache__/
 
 # Virtual Environment
 .venv/
+src/__pycache__/process_Abacus.cpython-310.pyc
