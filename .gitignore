@@ -5,6 +5,7 @@
 *.asdf
 *.hdf5
 *.h5
+*.pyc
 
 # Python
 __pycache__/
