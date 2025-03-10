@@ -1,19 +1,14 @@
 import numpy as np
 import scipy as sp
-from julia import Main
-from julia.api import Julia
+import os
 
-# You need to install PyJulia (pip install julia) and have Julia installed
-# Initialize Julia
-def init_julia():
-    """Initialize the Julia interface and load the necessary packages"""
-    jl = Julia(compiled_modules=False)
-    # Load required Julia packages
-    Main.eval('using Random, SpecialFunctions, Statistics')
-    # Define the Julia function
-    with open('populate_galaxies.jl', 'r') as f:
-        Main.eval(f.read())
-    return True
+from julia.api import Julia
+jl = Julia(compiled_modules=False)
+from julia import Main
+
+current_dir = os.path.dirname(os.path.abspath(__file__))
+julia_file = os.path.join(current_dir, "populate_galaxies.jl")
+Main.include(julia_file)
 
 # Python wrapper for the Julia function
 def populate_galaxies(h, s, HODparams, rsd=True, Lmin=-1000, Lmax=1000):
@@ -40,11 +35,6 @@ def populate_galaxies(h, s, HODparams, rsd=True, Lmin=-1000, Lmax=1000):
     dict
         Dictionary of galaxy positions with keys 'x', 'y', 'z'
     """
-    # Ensure Julia is initialized
-    try:
-        Main.populate_galaxies_julia
-    except:
-        init_julia()
     
     # Unpack halo data and ensure float64 type
     h_mass = np.asarray(h['mass'], dtype=np.float64)
