@@ -1,5 +1,6 @@
 from astropy.io import fits
 from astropy.table import Table
+import numpy as np
 
 def save_results_fits(results, filename):
     """
@@ -86,22 +87,21 @@ def extract_arrays(h, s):
         (h_mass, h_x, h_y, h_z, h_velocity, h_sigma,
          s_mass, s_host_velocity, s_n_particles, s_x, s_y, s_z, s_velocity)
     """
-    # Extract halo arrays
-    h_mass = h['mass']
-    h_x = h['x']
-    h_y = h['y']
-    h_z = h['z']
-    h_velocity = h['velocity']
-    h_sigma = h['sigma']
+    h_mass = np.asarray(h['mass'], dtype=np.float32)
+    h_x = np.asarray(h['x'], dtype=np.float32)
+    h_y = np.asarray(h['y'], dtype=np.float32)
+    h_z = np.asarray(h['z'], dtype=np.float32)
+    h_velocity = np.asarray(h['velocity'], dtype=np.float32)
+    h_sigma = np.asarray(h['sigma'], dtype=np.float32)
     
-    # Extract subsample arrays
-    s_mass = s['mass']
-    s_host_velocity = s['host_velocity']
-    s_n_particles = s['n_particles']
-    s_x = s['x']
-    s_y = s['y']
-    s_z = s['z']
-    s_velocity = s['velocity']
+    # Extract subsample arrays, ensuring float64 type
+    s_mass = np.asarray(s['mass'], dtype=np.float32)
+    s_host_velocity = np.asarray(s['host_velocity'], dtype=np.float32)
+    s_n_particles = np.asarray(s['n_particles'], dtype=np.int32)
+    s_x = np.asarray(s['x'], dtype=np.float32)
+    s_y = np.asarray(s['y'], dtype=np.float32)
+    s_z = np.asarray(s['z'], dtype=np.float32)
+    s_velocity = np.asarray(s['velocity'], dtype=np.float32)
     
     return (
         h_mass, h_x, h_y, h_z, h_velocity, h_sigma,

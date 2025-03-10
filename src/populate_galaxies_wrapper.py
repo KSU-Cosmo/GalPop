@@ -10,17 +10,35 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 julia_file = os.path.join(current_dir, "populate_galaxies.jl")
 Main.include(julia_file)
 
-# Python wrapper for the Julia function
-def populate_galaxies(h, s, HODparams, rsd=True, Lmin=-1000, Lmax=1000):
+# Python wrapper for the Julia function that accepts individual arrays
+def populate_galaxies(
+    h_mass, h_x, h_y, h_z, h_velocity, h_sigma,
+    s_mass, s_host_velocity, s_n_particles, s_x, s_y, s_z, s_velocity,
+    HODparams, rsd=True, Lmin=-1000, Lmax=1000
+):
     """
-    Python wrapper for the Julia implementation of populate_galaxies.
+    Python wrapper for the Julia implementation of populate_galaxies that accepts individual arrays.
     
     Parameters
     ----------
-    h : dict
-        Dictionary containing halo properties
-    s : dict
-        Dictionary containing subhalo properties
+    h_mass : array-like
+        Halo masses
+    h_x, h_y, h_z : array-like
+        Halo coordinates
+    h_velocity : array-like
+        Halo velocities
+    h_sigma : array-like
+        Halo velocity dispersions
+    s_mass : array-like
+        Subsample masses
+    s_host_velocity : array-like
+        Subsample host velocities
+    s_n_particles : array-like
+        Number of particles in each subsample
+    s_x, s_y, s_z : array-like
+        Subsample coordinates
+    s_velocity : array-like
+        Subsample velocities
     HODparams : sequence
         Sequence of HOD parameters (lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s)
     rsd : bool, optional
@@ -36,26 +54,38 @@ def populate_galaxies(h, s, HODparams, rsd=True, Lmin=-1000, Lmax=1000):
         Dictionary of galaxy positions with keys 'x', 'y', 'z'
     """
     
-    # Unpack halo data and ensure float64 type
-    h_mass = np.asarray(h['mass'], dtype=np.float64)
-    h_x = np.asarray(h['x'], dtype=np.float64)
-    h_y = np.asarray(h['y'], dtype=np.float64)
-    h_z = np.asarray(h['z'], dtype=np.float64)
-    h_velocity = np.asarray(h['velocity'], dtype=np.float64)
-    h_sigma = np.asarray(h['sigma'], dtype=np.float64)
+    print("passing arrays")
+    # Before your conversion code, add:
+    for name, arr in [
+    ('h_mass', h_mass), ('h_x', h_x), ('h_y', h_y), ('h_z', h_z), 
+    ('h_velocity', h_velocity), ('h_sigma', h_sigma),
+    ('s_mass', s_mass), ('s_host_velocity', s_host_velocity), 
+    ('s_n_particles', s_n_particles), ('s_x', s_x), 
+    ('s_y', s_y), ('s_z', s_z), ('s_velocity', s_velocity)
+    ]:
+        print(f"{name}: type={type(arr)}, dtype={getattr(arr, 'dtype', None)}, shape={getattr(arr, 'shape', None)}")
+    # Ensure all arrays are float64 type
+    '''
+    h_mass = np.asarray(h_mass, dtype=np.float64)
+    h_x = np.asarray(h_x, dtype=np.float64)
+    h_y = np.asarray(h_y, dtype=np.float64)
+    h_z = np.asarray(h_z, dtype=np.float64)
+    h_velocity = np.asarray(h_velocity, dtype=np.float64)
+    h_sigma = np.asarray(h_sigma, dtype=np.float64)
     
-    # Unpack subsample data and ensure float64 type
-    s_mass = np.asarray(s['mass'], dtype=np.float64)
-    s_host_velocity = np.asarray(s['host_velocity'], dtype=np.float64)
-    s_n_particles = np.asarray(s['n_particles'], dtype=np.float64)
-    s_x = np.asarray(s['x'], dtype=np.float64)
-    s_y = np.asarray(s['y'], dtype=np.float64)
-    s_z = np.asarray(s['z'], dtype=np.float64)
-    s_velocity = np.asarray(s['velocity'], dtype=np.float64)
-    
+    s_mass = np.asarray(s_mass, dtype=np.float64)
+    s_host_velocity = np.asarray(s_host_velocity, dtype=np.float64)
+    s_n_particles = np.asarray(s_n_particles, dtype=np.float64)
+    s_x = np.asarray(s_x, dtype=np.float64)
+    s_y = np.asarray(s_y, dtype=np.float64)
+    s_z = np.asarray(s_z, dtype=np.float64)
+    s_velocity = np.asarray(s_velocity, dtype=np.float64)
+    '''
+    print("unpacking HOD parameters")
     # Unpack HOD parameters
     lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s = HODparams
     
+    print("call the Julia function")
     # Call the Julia function
     x_gal, y_gal, z_gal = Main.populate_galaxies_julia(
         h_mass, h_x, h_y, h_z, h_velocity, h_sigma,
@@ -64,6 +94,7 @@ def populate_galaxies(h, s, HODparams, rsd=True, Lmin=-1000, Lmax=1000):
         rsd, float(Lmin), float(Lmax)
     )
     
+    print("convert the arrays back to python")
     # Convert Julia arrays to NumPy arrays
     x_gal = np.array(x_gal)
     y_gal = np.array(y_gal)

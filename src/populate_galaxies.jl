@@ -18,8 +18,8 @@ Populates galaxies based on halo and subhalo data using HOD parameters.
 - `Lmin`, `Lmax`: Box limits for periodic boundary conditions
 """
 function populate_galaxies_julia(
-    h_mass, h_x, h_y, h_z, h_velocity, h_sigma,
-    s_mass, s_host_velocity, s_n_particles, s_x, s_y, s_z, s_velocity,
+    h_mass::Vector{Float32}, h_x::Vector{Float32}, h_y::Vector{Float32}, h_z::Vector{Float32}, h_velocity::Vector{Float32}, h_sigma::Vector{Float32},
+    s_mass::Vector{Float32}, s_host_velocity::Vector{Float32}, s_n_particles::Vector{Int32}, s_x::Vector{Float32}, s_y::Vector{Float32}, s_z::Vector{Float32}, s_velocity::Vector{Float32},
     lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s,
     rsd::Bool, Lmin::Float64, Lmax::Float64
 )
