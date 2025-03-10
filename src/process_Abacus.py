@@ -203,27 +203,3 @@ def process_Abacus_directory(dir_path, Mhlow, Mslow, maxsats):
             print(f"  - {slab}: {error}")
     
     return result
-
-
-def main():
-    """
-    Example use of the Abacus processing functions.
-    
-    This function demonstrates how to process Abacus data and save the results.
-    Uncomment and modify the parameters to use.
-    """
-    # Example usage
-    # dir_path = "/global/cfs/cdirs/desi/cosmosim/Abacus/AbacusSummit_base_c000_ph000/halos/z0.800/halo_info/"
-    # Mhlow = 12.5       # Minimum log10 halo mass
-    # Mslow = 13.5       # Minimum log10 subhalo host mass
-    # maxsats = 25       # Maximum satellites per host
-    #
-    # results = process_Abacus_directory(dir_path, Mhlow, Mslow, maxsats)
-    # save_results_fits(results, "abacus_results.fits")
-    #
-    # # Later, to read the data:
-    # halo_data, subsample_data = read_results_fits("abacus_results.fits")
-
-
-if __name__ == "__main__":
-    main()

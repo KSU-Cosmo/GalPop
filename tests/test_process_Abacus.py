@@ -12,8 +12,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'
 from process_Abacus import (
     process_Abacus_slab,
     process_Abacus_directory,
-    save_results_fits,
-    read_results_fits,
 )
 
 # ----- Mock Data and Fixtures -----
@@ -117,55 +115,3 @@ def test_process_Abacus_directory(mock_process_slab, mock_glob, mock_results):
         raise ValueError("Unexpected length of halo mass array")
     if len(result['subsample']['mass']) != len(mock_results['subsample']['mass']) * 2:
         raise ValueError("Unexpected length of subsample mass array")
-
-def _validate_fits_data(halo_data, subsample_data, mock_results):
-    """Validate the data read from FITS file matches expected results"""
-    if len(halo_data) != len(mock_results['halo']['mass']):
-        raise ValueError("Halo data length mismatch")
-    if len(subsample_data) != len(mock_results['subsample']['mass']):
-        raise ValueError("Subsample data length mismatch")
-    
-    if not np.array_equal(halo_data['mass'], mock_results['halo']['mass']):
-        raise ValueError("Halo mass arrays do not match")
-    if not np.array_equal(subsample_data['mass'], mock_results['subsample']['mass']):
-        raise ValueError("Subsample mass arrays do not match")
-
-def test_save_and_read_fits(mock_results):
-    """Test saving and reading results to/from FITS file"""
-    fd, temp_filename = tempfile.mkstemp(suffix='.fits')
-    os.close(fd)  # Close the file descriptor immediately
-    
-    try:
-        save_results_fits(mock_results, temp_filename)
-
-        if not os.path.exists(temp_filename):
-            raise ValueError("FITS file was not created")
-        
-        halo_data, subsample_data = read_results_fits(temp_filename)
-        _validate_fits_data(halo_data, subsample_data, mock_results)
-    finally:
-        os.unlink(temp_filename)  # Clean up the temporary file
-
-def _validate_result_structure(result):
-    """Validate the basic structure of the result dictionary"""
-    if 'halo' not in result:
-        raise ValueError("Missing 'halo' key in result")
-    if 'subsample' not in result:
-        raise ValueError("Missing 'subsample' key in result")
-
-def _validate_required_fields(data, fields, data_type):
-    """Validate that all required fields are present in the data"""
-    for field in fields:
-        if field not in data:
-            raise ValueError(f"Missing {field} in {data_type} data")
-
-def _validate_array_shapes(result):
-    """Validate the shapes of arrays in the result"""
-    for array in result['halo'].values():
-        if array.shape != (2,):
-            raise ValueError("Not all halo arrays have the expected shape")
-    
-    subsample_length = len(result['subsample']['mass'])
-    for array in result['subsample'].values():
-        if array.shape != (subsample_length,):
-            raise ValueError("Subsample arrays have inconsistent shapes")

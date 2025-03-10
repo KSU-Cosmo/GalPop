@@ -23,5 +23,9 @@ This dictionary contains needed information about halos and satellites.
 I mostly work with AbacusSummit simulations, so we provide a code for reading abacus files and converting them into a file that contains this dictionary.
 If you are working with other simulations, you have to figure out how to convert the information in those simulations into this format (or get in touch with me, I may be able to help).
 
-* `process_Abacus.py` - is the file that contains functions to process AbacusSummit files into this format.
-* `process_Abacus.ipynb` - is the notebook that shows how to use those functions.
+* `process_Abacus.py` - contains functions to process AbacusSummit files into this format.
+* `process_Abacus.ipynb` - shows how to use those functions.
+* `populate_galaxies.jl` - populates the halos with galaxies. I had to write this in Julia, the pure python implementation (populate_galaxies.py) was a bit slow.
+* `populate_galaxies_julia.ipynb` - shows how to run this in Julia.
+* `populate_galaxies_wrapper.py` - wrapps the call to the Julia function from within python.
+* `populate_galaxies.ipynb` - demonstrates how the above works.

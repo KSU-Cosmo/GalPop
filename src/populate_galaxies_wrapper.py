@@ -54,33 +54,6 @@ def populate_galaxies(
         Dictionary of galaxy positions with keys 'x', 'y', 'z'
     """
     
-    print("passing arrays")
-    # Before your conversion code, add:
-    for name, arr in [
-    ('h_mass', h_mass), ('h_x', h_x), ('h_y', h_y), ('h_z', h_z), 
-    ('h_velocity', h_velocity), ('h_sigma', h_sigma),
-    ('s_mass', s_mass), ('s_host_velocity', s_host_velocity), 
-    ('s_n_particles', s_n_particles), ('s_x', s_x), 
-    ('s_y', s_y), ('s_z', s_z), ('s_velocity', s_velocity)
-    ]:
-        print(f"{name}: type={type(arr)}, dtype={getattr(arr, 'dtype', None)}, shape={getattr(arr, 'shape', None)}")
-    # Ensure all arrays are float64 type
-    '''
-    h_mass = np.asarray(h_mass, dtype=np.float64)
-    h_x = np.asarray(h_x, dtype=np.float64)
-    h_y = np.asarray(h_y, dtype=np.float64)
-    h_z = np.asarray(h_z, dtype=np.float64)
-    h_velocity = np.asarray(h_velocity, dtype=np.float64)
-    h_sigma = np.asarray(h_sigma, dtype=np.float64)
-    
-    s_mass = np.asarray(s_mass, dtype=np.float64)
-    s_host_velocity = np.asarray(s_host_velocity, dtype=np.float64)
-    s_n_particles = np.asarray(s_n_particles, dtype=np.float64)
-    s_x = np.asarray(s_x, dtype=np.float64)
-    s_y = np.asarray(s_y, dtype=np.float64)
-    s_z = np.asarray(s_z, dtype=np.float64)
-    s_velocity = np.asarray(s_velocity, dtype=np.float64)
-    '''
     print("unpacking HOD parameters")
     # Unpack HOD parameters
     lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s = HODparams
