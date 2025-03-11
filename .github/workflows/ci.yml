@@ -28,19 +28,23 @@ jobs:
         with:
           version: ${{ matrix.version }}
       - uses: julia-actions/cache@v1
-      - uses: julia-actions/julia-buildpkg@v1
-        working-directory: ./julia
-      - uses: julia-actions/julia-runtest@v1
-        working-directory: ./julia
+      - name: Build package
+        uses: julia-actions/julia-buildpkg@v1
+        with:
+          working-directory: './julia'
+      - name: Run tests
+        uses: julia-actions/julia-runtest@v1
+        with:
+          working-directory: './julia'
         env:
           JULIA_COVERAGE: "true"
       # Code coverage
       - uses: julia-actions/julia-processcoverage@v1
         with:
-          directories: ./julia/src
+          directories: './julia/src'
       - uses: codecov/codecov-action@v3
         with:
-          file: ./lcov.info
+          file: './lcov.info'
           flags: julia
 
   python-test:
@@ -82,7 +86,7 @@ jobs:
       - name: Upload Python coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          file: ./python/coverage.xml
+          file: './python/coverage.xml'
           flags: python
 
   julia-lint:
