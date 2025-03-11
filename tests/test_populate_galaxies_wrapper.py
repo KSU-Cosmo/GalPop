@@ -11,7 +11,9 @@ julia_file = os.path.join(current_dir, "..", "src", "populate_galaxies.jl")
 julia_file = os.path.abspath(julia_file)  # Ensure absolute path
 
 Main.include(julia_file)
+print("****TEST*****")
 print(dir(Main))
+print("****TEST****")
 
 # Fix the import path
 srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
