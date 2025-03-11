@@ -6,10 +6,6 @@ import julia
 julia.Julia(compiled_modules=False)  # Initializes Julia
 from julia import Main  # noqa: E402
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-julia_file = os.path.join(current_dir, "populate_galaxies.jl")
-Main.include(julia_file)
-
 # Fix the import path
 srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
 sys.path.append(srcpath)
