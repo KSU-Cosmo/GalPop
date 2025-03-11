@@ -37,9 +37,8 @@ jobs:
         python -m pip install flake8 pytest pytest-cov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    # Cache Julia installation and environment with proper ID
+    # Cache Julia dependencies (but PyCall will always be rebuilt)
     - name: Cache Julia dependencies
-      id: cache-julia
       uses: actions/cache@v4
       with:
         path: |
@@ -50,29 +49,24 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-julia-
 
-    # Install Julia only if necessary
+    # Install Julia
     - name: Install Julia
       uses: julia-actions/setup-julia@v2
       with:
         version: "1.11"
-      if: steps.cache-julia.outputs.cache-hit != 'true'
 
-    # Setup PyCall only if necessary
-    - name: Setup PyCall to use GitHub Actions Python
+    # Always rebuild PyCall
+    - name: Setup PyCall to use GitHub Actions Python (Always Rebuild)
       run: |
         julia -e 'using Pkg;
-        if !haskey(Pkg.installed(), "PyCall")
-          Pkg.add("PyCall");
-        end;
-        ENV["PYTHON"] = Sys.which("python");
-        Pkg.build("PyCall")'
-      if: steps.cache-julia.outputs.cache-hit != 'true'
+                  Pkg.add("PyCall");
+                  ENV["PYTHON"] = Sys.which("python");
+                  Pkg.build("PyCall")'
 
-    # Install Julia Packages only if necessary
+    # Install Julia Packages (always runs)
     - name: Install Julia Packages
       run: |
         julia -e 'using Pkg; Pkg.add(["SpecialFunctions", "Random", "Statistics"])'
-      if: steps.cache-julia.outputs.cache-hit != 'true'
 
     - name: Initialize Julia in Python
       run: |
