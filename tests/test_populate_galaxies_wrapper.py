@@ -15,22 +15,18 @@ from julia import Main  # noqa: E402
 
 # Load the Julia file with proper error handling
 try:
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    julia_file = os.path.join(current_dir, "..", "src", "populate_galaxies.jl")
-    julia_file = os.path.abspath(julia_file)  # Ensure absolute path
+    # Use absolute path to ensure consistency across environments
+    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    julia_file = os.path.join(repo_root, "src", "populate_galaxies.jl")
     
-    # Print file existence for debugging
     print(f"Checking Julia file at: {julia_file}")
     print(f"File exists: {os.path.exists(julia_file)}")
     
-    # Use safer string formatting for Julia include
-    julia_file_escaped = julia_file.replace('\\', '\\\\')
-    Main.eval(f'Base.include(Main, "{julia_file_escaped}")')
+    # Use include directly
+    Main.include(julia_file)
     
-    print("****TEST*****")
-    print("Julia Main contents:", dir(Main))
-    print("populate_galaxies_julia in Main:", "populate_galaxies_julia" in dir(Main))
-    print("****TEST****")
+    print("Julia Main contents check:")
+    print("populate_galaxies_julia in Main:", hasattr(Main, "populate_galaxies_julia"))
 except Exception as e:
     print(f"Julia file loading error: {e}")
     raise

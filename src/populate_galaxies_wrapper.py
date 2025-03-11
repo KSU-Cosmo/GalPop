@@ -2,15 +2,19 @@ import numpy as np
 import os
 import julia
 
-julia.Julia(compiled_modules=False)  # Initializes Julia
+# Initialize Julia
+j = julia.Julia(compiled_modules=False)
 
 from julia import Main  # noqa: E402
 
-
+# Use absolute path to ensure consistency
 current_dir = os.path.dirname(os.path.abspath(__file__))
 julia_file = os.path.join(current_dir, "populate_galaxies.jl")
-Main.include(julia_file)
+print(f"Loading Julia file: {julia_file}")
+print(f"File exists: {os.path.exists(julia_file)}")
 
+# Load the Julia file
+Main.include(julia_file)
 
 # Python wrapper for the Julia function that accepts individual arrays
 def populate_galaxies(

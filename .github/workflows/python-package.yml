@@ -23,49 +23,26 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    # Cache Python dependencies
-    - name: Cache Python dependencies
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-python-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-python-
-
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         python -m pip install flake8 pytest pytest-cov
         pip install -r requirements.txt
 
-    # Install Julia
     - name: Install Julia
       uses: julia-actions/setup-julia@v2
       with:
         version: ${{ matrix.julia-version }}
 
-    # Cache Julia installation and environment with proper ID
-    - name: Cache Julia dependencies
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.julia/packages
-          ~/.julia/environments
-          ~/.julia/artifacts
-        key: ${{ runner.os }}-julia-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-julia-
-
-    # Install all Julia dependencies from Project.toml
+    # Install required Julia packages
     - name: Install Julia dependencies
       run: |
-        julia --project=. -e '
-          using Pkg;
-          Pkg.instantiate();
-          Pkg.status();
+        julia -e '
+          using Pkg
+          Pkg.add(["PyCall", "SpecialFunctions", "Random", "Statistics"])
         '
 
-    # List directories to ensure files are where we expect
+    # Debug directory structure
     - name: Debug directory structure
       run: |
         echo "Current directory:"
@@ -76,44 +53,39 @@ jobs:
         ls -la src || echo "src directory not found"
         echo "Tests directory:"
         ls -la tests || echo "tests directory not found"
+        echo "Julia file:"
+        find . -name "populate_galaxies.jl" -type f
 
     # Setup PyCall with explicit configuration
     - name: Setup PyCall
       run: |
         PYTHON_PATH=$(which python)
         echo "Python path: $PYTHON_PATH"
-        python -c "import sys; print('Python executable:', sys.executable)"
-        julia --project=. -e '
-          using Pkg;
-          ENV["PYTHON"] = "'$PYTHON_PATH'";
-          println("Setting PyCall Python to: ", ENV["PYTHON"]);
-          Pkg.build("PyCall");
-          try
-            using PyCall
-            println("PyCall Python path: ", PyCall.python);
-          catch e
-            println("Error loading PyCall: ", e)
-            exit(1)
-          end
+        julia -e '
+          using Pkg
+          ENV["PYTHON"] = "'$PYTHON_PATH'"
+          println("Setting PyCall Python to: ", ENV["PYTHON"])
+          Pkg.build("PyCall")
+          using PyCall
+          println("PyCall configured with Python: ", PyCall.python)
         '
 
-    # Test Julia integration with Python
-    - name: Test Julia-Python integration
+    # Pre-check Julia integration
+    - name: Verify Julia-Python integration
       run: |
         python -c "
-        import sys
+        import sys, os, julia
         print('Python version:', sys.version)
         try:
-            import julia
-            print('Julia package version:', julia.__version__)
-            j = julia.Julia(runtime='julia', compiled_modules=False)
-            print('Julia initialized successfully')
+            j = julia.Julia(compiled_modules=False)
             from julia import Main
-            print('Julia version:', Main.eval('string(VERSION)'))
-            print('Julia working directory:', Main.eval('pwd()'))
+            julia_file = os.path.abspath('src/populate_galaxies.jl')
+            print(f'Including Julia file from: {julia_file}')
+            Main.include(julia_file)
+            print('Function exists:', hasattr(Main, 'populate_galaxies_julia'))
         except Exception as e:
             import traceback
-            print('ERROR in Julia-Python integration:')
+            print('ERROR:')
             traceback.print_exc()
             sys.exit(1)
         "
@@ -124,16 +96,14 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    # Run tests with explicit paths and verbose output
+    # Run tests with proper environment variables
     - name: Test with pytest
       env:
         PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/src
         JULIA_PROJECT: ${{ github.workspace }}
       run: |
         echo "PYTHONPATH: $PYTHONPATH"
-        echo "JULIA_PROJECT: $JULIA_PROJECT"
-        python -c "import sys; print(sys.path)"
-        pytest -v --cov-branch --cov-report=xml --cov=. tests/
+        pytest -vv tests/
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@main
