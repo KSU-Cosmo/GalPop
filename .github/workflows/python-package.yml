@@ -24,7 +24,7 @@ jobs:
 
     # Cache Python dependencies
     - name: Cache Python dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-python-${{ hashFiles('**/requirements.txt') }}
@@ -45,7 +45,7 @@ jobs:
 
     # Cache Julia dependencies
     - name: Cache Julia dependencies
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       with:
         path: ~/.julia
         key: ${{ runner.os }}-julia-${{ hashFiles('**/Project.toml') }}
