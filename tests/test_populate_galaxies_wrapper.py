@@ -13,7 +13,7 @@ return_xyz = {'x': [1, 2],
               'y': [3, 4],
               'z': [5, 6]}
 
-with patch("populate_galaxies_wrapper.populate_galaxies") as mock_populate:
+with patch("pgw.populate_galaxies") as mock_populate:
     mock_populate.return_value = return_xyz  # Set a fake return value
 
 
