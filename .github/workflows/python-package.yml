@@ -59,6 +59,7 @@ jobs:
     # Create a dummy test file that doesn't try to mock the Julia function
     - name: Create dummy test
       run: |
+        mkdir -p tests
         cat > tests/test_simple_julia.py << 'EOF'
 import unittest
 import numpy as np
@@ -203,9 +204,9 @@ result = test_wrapper.test_populate_galaxies()
 print('Test result:', result)
 
 # Verify the result
-assert len(result['x']) == 2, f'Expected 2 values in x, got {len(result['x'])}'
-assert len(result['y']) == 2, f'Expected 2 values in y, got {len(result['y'])}'
-assert len(result['z']) == 2, f'Expected 2 values in z, got {len(result['z'])}'
+assert len(result['x']) == 2, f\"Expected 2 values in x, got {len(result['x'])}\"
+assert len(result['y']) == 2, f\"Expected 2 values in y, got {len(result['y'])}\"
+assert len(result['z']) == 2, f\"Expected 2 values in z, got {len(result['z'])}\"
 
 print('✅ Test passed!')
 "
