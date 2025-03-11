@@ -105,7 +105,7 @@ jobs:
                 exit(1)
               end'
           fi
-docs:
+  docs:
     name: Documentation
     runs-on: ubuntu-latest
     permissions:
@@ -125,4 +125,4 @@ docs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          julia --project=docs/ docs/make.jl
+              julia --project=docs/ docs/make.jl
