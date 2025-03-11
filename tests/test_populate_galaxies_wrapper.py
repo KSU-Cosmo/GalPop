@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import sys
+from unittest.mock import patch
 
 srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
 sys.path.append(srcpath)
@@ -11,6 +12,9 @@ import populate_galaxies_wrapper as pgw  # noqa: E402
 return_xyz = {'x': [1, 2],
               'y': [3, 4],
               'z': [5, 6]}
+
+with patch("populate_galaxies_wrapper.populate_galaxies") as mock_populate:
+    mock_populate.return_value = return_xyz  # Set a fake return value
 
 
 def test_populate_galaxies():
@@ -52,3 +56,6 @@ def test_populate_galaxies():
     assert galaxies['x'] == [1, 2]
     assert galaxies['y'] == [3, 4]
     assert galaxies['z'] == [5, 6]
+
+    # Check if mock was called
+    mock_populate.assert_called_once()
