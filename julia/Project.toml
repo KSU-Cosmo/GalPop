@@ -1,6 +1,6 @@
 name = "GalPop"
 uuid = "a2b53dbf-4ee7-49ef-b56e-5aebc4e17c1d"  # This is a randomly generated UUID
-authors = ["Your Name <your.email@example.com>"]
+authors = ["Lado Samushia <lado.samushia.office@gmail.com>"]
 version = "0.1.0"
 
 [deps]

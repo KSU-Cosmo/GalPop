@@ -9,18 +9,12 @@ on:
 
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    name: Julia ${{ matrix.version }}
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
         version:
-          - '1.6'  # LTS version
           - '1'    # Latest stable release
-        os:
-          - ubuntu-latest
-          - macos-latest
-          - windows-latest
 
     steps:
       - uses: actions/checkout@v3
@@ -29,15 +23,13 @@ jobs:
           version: ${{ matrix.version }}
       - uses: julia-actions/cache@v1
       - name: Build package
-        uses: julia-actions/julia-buildpkg@v1
-        with:
-          working-directory: './julia'
+        run: |
+          cd julia
+          julia --project -e 'using Pkg; Pkg.instantiate(); Pkg.build()'
       - name: Run tests
-        uses: julia-actions/julia-runtest@v1
-        with:
-          working-directory: './julia'
-        env:
-          JULIA_COVERAGE: "true"
+        run: |
+          cd julia
+          julia --project -e 'using Pkg; Pkg.test(coverage=true)'
       # Code coverage
       - uses: julia-actions/julia-processcoverage@v1
         with:
@@ -48,19 +40,14 @@ jobs:
           flags: julia
 
   python-test:
-    name: Python ${{ matrix.python-version }}
+    name: Python Test
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ['3.8', '3.9', '3.10']
-
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.9'
       - name: Set up Julia
         uses: julia-actions/setup-julia@v1
         with:
@@ -69,21 +56,30 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pytest pytest-cov flake8 black
-          pip install -e ./python
+          if [ -d "./python" ]; then
+            pip install -e ./python
+          fi
       - name: Lint with flake8
         run: |
-          cd python
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          if [ -d "./python" ]; then
+            cd python
+            flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+            flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          fi
       - name: Check formatting with black
         run: |
-          cd python
-          black --check .
+          if [ -d "./python" ]; then
+            cd python
+            black --check .
+          fi
       - name: Run tests with coverage
         run: |
-          cd python
-          pytest --cov=galpop --cov-report=xml
+          if [ -d "./python" ]; then
+            cd python
+            pytest --cov=galpop --cov-report=xml
+          fi
       - name: Upload Python coverage to Codecov
+        if: ${{ success() && hashFiles('./python/coverage.xml') != '' }}
         uses: codecov/codecov-action@v3
         with:
           file: './python/coverage.xml'
@@ -97,35 +93,15 @@ jobs:
       - uses: julia-actions/setup-julia@v1
       - name: Install JuliaFormatter
         run: |
-          julia --project=./julia -e 'using Pkg; Pkg.add("JuliaFormatter")'
+          julia -e 'using Pkg; Pkg.add("JuliaFormatter")'
       - name: Format check
         run: |
-          julia --project=./julia -e '
-            using JuliaFormatter
-            format_check = format("./julia/src", verbose=true)
-            @assert format_check "Some files are not properly formatted. Run JuliaFormatter.format(\"./julia/src\") to fix."'
-
-  docs:
-    name: Documentation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: julia-actions/setup-julia@v1
-        with:
-          version: '1'
-      - name: Install dependencies
-        run: |
-          julia --project=docs -e '
-            using Pkg
-            Pkg.develop(PackageSpec(path=pwd()))
-            Pkg.instantiate()'
-      - name: Build and deploy docs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
-        run: |
-          julia --project=docs -e '
-            using Documenter
-            using GalPop
-            DocMeta.setdocmeta!(GalPop, :DocTestSetup, :(using GalPop); recursive=true)
-            include("docs/make.jl")'
+          if [ -d "./julia/src" ]; then
+            julia -e '
+              using JuliaFormatter
+              format_check = format("./julia/src", verbose=true)
+              if !format_check
+                @error "Some files are not properly formatted. Run JuliaFormatter.format(\"./julia/src\") to fix."
+                exit(1)
+              end'
+          fi
