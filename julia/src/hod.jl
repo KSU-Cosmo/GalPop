@@ -85,7 +85,7 @@ function populate_galaxies(halos, subhalos, hod_params)
     h_z = halos.z
     h_velocity = halos.velocity
     h_sigma = halos.sigma
-    
+
     s_mass = subhalos.mass
     s_host_velocity = subhalos.host_velocity
     s_n_particles = subhalos.n_particles
@@ -93,7 +93,7 @@ function populate_galaxies(halos, subhalos, hod_params)
     s_y = subhalos.y
     s_z = subhalos.z
     s_velocity = subhalos.velocity
-    
+
     lnMcut = hod_params.lnMcut
     sigma = hod_params.sigma
     lnM1 = hod_params.lnM1
@@ -104,21 +104,21 @@ function populate_galaxies(halos, subhalos, hod_params)
     rsd = hod_params.rsd
     Lmin = hod_params.Lmin
     Lmax = hod_params.Lmax
-    
+
     # Pre-allocate results to avoid multiple concatenations
     total_length = length(h_mass) + length(s_mass)
     x_gal = Vector{Float64}(undef, total_length)
     y_gal = Vector{Float64}(undef, total_length)
     z_gal = Vector{Float64}(undef, total_length)
-    
+
     # Calculate parameters once
     Mcut = exp10(lnMcut)
     M1 = exp10(lnM1)
     Lbox = Lmax - Lmin
-    
+
     # Calculate central galaxy probabilities
     p_cen = calculate_p_cen(h_mass, Mcut, sigma)
-    
+
     # Process central galaxies
     h_count = 0
     @inbounds for i in 1:length(p_cen)
@@ -126,7 +126,7 @@ function populate_galaxies(halos, subhalos, hod_params)
             h_count += 1
             x_gal[h_count] = h_x[i]
             y_gal[h_count] = h_y[i]
-            
+
             if rsd
                 # Apply RSD inline for centrals
                 z_val = h_z[i] + h_velocity[i] + alpha_c * randn() * h_sigma[i]
@@ -137,28 +137,31 @@ function populate_galaxies(halos, subhalos, hod_params)
             end
         end
     end
-    
+
     # Calculate subhalo central probabilities
     p_cen_sat = calculate_p_cen(s_mass, Mcut, sigma)
-    
+
     # Process satellite galaxies
     s_count = h_count
     @inbounds for i in 1:length(s_mass)
         # Calculate expected number of satellites
         n_sat_i = calculate_n_sat(s_mass[i], Mcut, M1, alpha, kappa, p_cen_sat[i])
-        
+
         # Normalize by number of particles and check probability
         if n_sat_i > 0
             prob = n_sat_i / s_n_particles[i]
-            
+
             if rand() < prob
                 s_count += 1
                 x_gal[s_count] = s_x[i]
                 y_gal[s_count] = s_y[i]
-                
+
                 if rsd
                     # Apply RSD inline for satellites
-                    z_val = s_z[i] + s_host_velocity[i] + alpha_s * (s_velocity[i] - s_host_velocity[i])
+                    z_val =
+                        s_z[i] +
+                        s_host_velocity[i] +
+                        alpha_s * (s_velocity[i] - s_host_velocity[i])
                     # Apply periodic boundary inline
                     z_gal[s_count] = mod(z_val - Lmin, Lbox) + Lmin
                 else
@@ -167,11 +170,11 @@ function populate_galaxies(halos, subhalos, hod_params)
             end
         end
     end
-    
+
     # Resize arrays to actual count
     resize!(x_gal, s_count)
     resize!(y_gal, s_count)
     resize!(z_gal, s_count)
-    
+
     return (x=x_gal, y=y_gal, z=z_gal, count=s_count)
 end
