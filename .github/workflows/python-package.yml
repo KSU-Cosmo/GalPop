@@ -33,7 +33,9 @@ jobs:
       uses: julia-actions/setup-julia@v1
       with:
         version: "1.9"  # Adjust based on your needs
-
+    - name: Setup PyCall to use GitHub Actions Python
+      run: |
+        julia -e 'using Pkg; Pkg.add("PyCall"); Pkg.build("PyCall")'
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
