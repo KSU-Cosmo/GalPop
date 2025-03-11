@@ -1,55 +1,21 @@
 import numpy as np
 import os
 import sys
-from unittest.mock import patch
-import julia
+from unittest.mock import patch, MagicMock
 
-# Initialize Julia with proper error handling
-try:
-    j = julia.Julia(compiled_modules=False)
-except Exception as e:
-    print(f"Julia initialization error: {e}")
-    raise
-
-from julia import Main  # noqa: E402
-
-# Load the Julia file with proper error handling
-try:
-    # Use absolute path to ensure consistency across environments
-    repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    julia_file = os.path.join(repo_root, "src", "populate_galaxies.jl")
-    
-    print(f"Checking Julia file at: {julia_file}")
-    print(f"File exists: {os.path.exists(julia_file)}")
-    
-    # Use include directly
-    Main.include(julia_file)
-    
-    print("Julia Main contents check:")
-    print("populate_galaxies_julia in Main:", hasattr(Main, "populate_galaxies_julia"))
-except Exception as e:
-    print(f"Julia file loading error: {e}")
-    raise
+# Import our helper first to ensure Julia is set up correctly
+from tests.julia_helper import Main, create_mock_return
 
 # Fix the import path
 srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
 sys.path.append(srcpath)
 
-# Import the module directly with error handling
-try:
-    import populate_galaxies_wrapper as pgw  # noqa: E402
-    print("pgw contents:", dir(pgw))
-except Exception as e:
-    print(f"Module import error: {e}")
-    raise
+# Now import the module
+import populate_galaxies_wrapper as pgw
 
 def test_populate_galaxies():
-    # Mock the populate_galaxies function within the pgw module
-    ret_xyz = {
-        'x': np.array([1, 2]),
-        'y': np.array([3, 4]),
-        'z': np.array([5, 6])
-    }
+    # Get mock return value from helper
+    ret_xyz = create_mock_return()
     
     # Create mock halo and subsample dictionaries with test data
     h_mass = np.array([1e13, 2e13, 3e13], dtype=np.float32)  # Halo masses
@@ -82,8 +48,14 @@ def test_populate_galaxies():
         0.5  # alpha_s
     ]
     
-    # Call the populate_galaxies function with separate h and s inputs
-    with patch.object(Main, "populate_galaxies_julia", return_value=ret_xyz):
+    # Alternative approach: monkey patch the function at module level instead of using patch.object
+    original_func = pgw.Main.populate_galaxies_julia
+    
+    try:
+        # Replace the function with a mock that returns our fixed values
+        pgw.Main.populate_galaxies_julia = MagicMock(return_value=(ret_xyz['x'], ret_xyz['y'], ret_xyz['z']))
+        
+        # Call the populate_galaxies function with separate h and s inputs
         galaxies = pgw.populate_galaxies(
             h_mass, h_x, h_y, h_z, h_velocity, h_sigma, s_mass,
             s_host_velocity, s_n_particles, s_x, s_y, s_z, s_velocity,
@@ -94,3 +66,6 @@ def test_populate_galaxies():
         assert np.array_equal(galaxies['x'], ret_xyz['x'])
         assert np.array_equal(galaxies['y'], ret_xyz['y'])
         assert np.array_equal(galaxies['z'], ret_xyz['z'])
+    finally:
+        # Restore the original function
+        pgw.Main.populate_galaxies_julia = original_func

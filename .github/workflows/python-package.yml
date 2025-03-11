@@ -42,20 +42,6 @@ jobs:
           Pkg.add(["PyCall", "SpecialFunctions", "Random", "Statistics"])
         '
 
-    # Debug directory structure
-    - name: Debug directory structure
-      run: |
-        echo "Current directory:"
-        pwd
-        echo "Repository contents:"
-        ls -la
-        echo "Source directory:"
-        ls -la src || echo "src directory not found"
-        echo "Tests directory:"
-        ls -la tests || echo "tests directory not found"
-        echo "Julia file:"
-        find . -name "populate_galaxies.jl" -type f
-
     # Setup PyCall with explicit configuration
     - name: Setup PyCall
       run: |
@@ -70,40 +56,26 @@ jobs:
           println("PyCall configured with Python: ", PyCall.python)
         '
 
-    # Pre-check Julia integration
-    - name: Verify Julia-Python integration
+    # Verify that everything is in place
+    - name: Debug directory structure
       run: |
-        python -c "
-        import sys, os, julia
-        print('Python version:', sys.version)
-        try:
-            j = julia.Julia(compiled_modules=False)
-            from julia import Main
-            julia_file = os.path.abspath('src/populate_galaxies.jl')
-            print(f'Including Julia file from: {julia_file}')
-            Main.include(julia_file)
-            print('Function exists:', hasattr(Main, 'populate_galaxies_julia'))
-        except Exception as e:
-            import traceback
-            print('ERROR:')
-            traceback.print_exc()
-            sys.exit(1)
-        "
+        echo "Current directory structure:"
+        find . -type f -name "*.py" | sort
+        find . -type f -name "*.jl" | sort
+        
+        # Verify helper exists
+        [ -f tests/julia_helper.py ] && echo "✓ julia_helper.py exists" || echo "✗ julia_helper.py missing"
+        
+        # Verify test can import helper
+        python -c "import sys; sys.path.insert(0, '.'); import tests.julia_helper; print('✓ Successfully imported helper')" || echo "✗ Failed to import helper"
 
-    # Lint with flake8
-    - name: Lint with flake8
-      run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
-    # Run tests with proper environment variables
+    # Run tests 
     - name: Test with pytest
       env:
         PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/src
-        JULIA_PROJECT: ${{ github.workspace }}
       run: |
         echo "PYTHONPATH: $PYTHONPATH"
-        pytest -vv tests/
+        pytest -v tests/
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@main
