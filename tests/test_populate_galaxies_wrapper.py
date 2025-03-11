@@ -12,7 +12,7 @@ return_xyz = {'x': [1, 2],
               'y': [3, 4],
               'z': [5, 6]}
 
-@patch ('Main.populate_galaxies_julia', return_value=return_xyz)
+#@patch ('Main.populate_galaxies_julia', return_value=return_xyz)
 def test_populate_galaxies():
     # Create mock halo and subsample dictionaries with test data
     h_mass = np.array([1e13, 2e13, 3e13]),  # Halo masses
