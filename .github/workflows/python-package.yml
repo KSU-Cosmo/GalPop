@@ -37,24 +37,26 @@ jobs:
         python -m pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    # Install Julia
-    - name: Install Julia
-      uses: julia-actions/setup-julia@v2
-      with:
-        version: "1.11"
-
-    # Cache Julia dependencies (with environment and installed packages)
+    # Cache Julia installation and environment
     - name: Cache Julia dependencies
       uses: actions/cache@v4
       with:
         path: |
           ~/.julia/packages
           ~/.julia/environments
-          ~/.julia/artifacts  # Add this to help cache the artifacts as well
+          ~/.julia/artifacts  # Cache Julia artifacts for faster build
         key: ${{ runner.os }}-julia-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
         restore-keys: |
           ${{ runner.os }}-julia-
 
+    # Install Julia only if necessary
+    - name: Install Julia
+      uses: julia-actions/setup-julia@v2
+      with:
+        version: "1.11"
+      if: steps.cache-julia.outputs.cache-hit != 'true'
+
+    # Setup PyCall only if necessary
     - name: Setup PyCall to use GitHub Actions Python
       run: |
         julia -e 'using Pkg; 
@@ -63,14 +65,17 @@ jobs:
                   end; 
                   ENV["PYTHON"] = Sys.which("python"); 
                   Pkg.build("PyCall")'
+      if: steps.cache-julia.outputs.cache-hit != 'true'
 
     - name: Initialize Julia in Python
       run: |
         python -c "import julia; julia.Julia(compiled_modules=False)"
 
+    # Install Julia Packages only if necessary
     - name: Install Julia Packages
       run: |
         julia -e 'using Pkg; Pkg.add(["SpecialFunctions", "Random", "Statistics"])'
+      if: steps.cache-julia.outputs.cache-hit != 'true'
 
     - name: Lint with flake8
       run: |
