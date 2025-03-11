@@ -105,3 +105,24 @@ jobs:
                 exit(1)
               end'
           fi
+docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # This allows the job to push to gh-pages
+    steps:
+      - uses: actions/checkout@v3
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: '1'
+      - name: Configure docs environment
+        run: |
+          julia --project=docs/ -e '
+            using Pkg
+            Pkg.develop(PackageSpec(path=pwd()))
+            Pkg.instantiate()'
+      - name: Build and deploy docs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          julia --project=docs/ docs/make.jl

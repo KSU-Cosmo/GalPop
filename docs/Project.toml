@@ -1,6 +1,6 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-GalPop = "a2b53dbf-4ee7-49ef-b56e-5aebc4e17c1d"  # Your package UUID
+GalPop = "a2b53dbf-4ee7-49ef-b56e-5aebc4e17c1d"  # Use your actual UUID
 
 [compat]
 Documenter = "0.27"

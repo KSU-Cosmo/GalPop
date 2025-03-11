@@ -5,12 +5,13 @@ DocMeta.setdocmeta!(GalPop, :DocTestSetup, :(using GalPop); recursive=true)
 
 makedocs(;
     modules=[GalPop],
-    authors="Your Name",
-    repo="https://github.com/yourusername/GalPop.jl/blob/{commit}{path}#{line}",
+    authors="KSU-Cosmo",
+    repo="https://github.com/KSU-Cosmo/GalPop/blob/{commit}{path}#{line}",
     sitename="GalPop.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://yourusername.github.io/GalPop.jl",
+        canonical="https://KSU-Cosmo.github.io/GalPop.jl",
+        edit_link="main",
         assets=String[],
     ),
     pages=[
@@ -21,6 +22,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/yourusername/GalPop.jl",
+    repo="github.com/KSU-Cosmo/GalPop.jl",
     devbranch="main",
 )
