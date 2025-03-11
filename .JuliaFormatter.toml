@@ -1,0 +1,7 @@
+style = "blue"  # Use the "blue" style guide
+indent = 4      # 4-space indentation
+margin = 92     # Line length margin
+always_for_in = true  # Always use 'for x in' instead of 'for x = '
+whitespace_typedefs = true  # Add whitespace in type definitions
+whitespace_ops_in_indices = true  # Add whitespace in indexing expressions
+remove_extra_newlines = true  # Remove unnecessary blank lines
