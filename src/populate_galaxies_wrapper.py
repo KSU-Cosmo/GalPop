@@ -2,9 +2,11 @@ import numpy as np
 import scipy as sp
 import os
 
-from julia.api import Julia
-jl = Julia(compiled_modules=False)
-from julia import Main
+import julia
+julia.Julia(compiled_modules=False)  # Initializes Julia
+
+from julia import Main  # Imports Julia's Main module
+
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 julia_file = os.path.join(current_dir, "populate_galaxies.jl")
