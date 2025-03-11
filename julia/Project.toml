@@ -1,0 +1,13 @@
+name = "GalPop"
+uuid = "a2b53dbf-4ee7-49ef-b56e-5aebc4e17c1d"  # This is a randomly generated UUID
+authors = ["Your Name <your.email@example.com>"]
+version = "0.1.0"
+
+[deps]
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
+[compat]
+julia = "1.6"
+SpecialFunctions = "2"
