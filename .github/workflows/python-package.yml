@@ -43,7 +43,7 @@ jobs:
       run: python -c "import julia; julia.install()"
     - name: Install Julia Packages
       run: |
-        julia -e 'using Pkg; Pkg.add(["SpecialFunctions, "Random", "Statistics"])'
+        julia -e 'using Pkg; Pkg.add(["SpecialFunctions", "Random", "Statistics"])'
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
