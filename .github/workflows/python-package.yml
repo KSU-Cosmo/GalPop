@@ -40,7 +40,7 @@ jobs:
       run: |
         pip install julia
     - name: Initialize Julia in Python
-      run: python -c "import julia; julia.install()
+      run: python -c "import julia; julia.install()"
     - name: Install Julia Packages
       run: |
         julia -e 'using Pkg; Pkg.add(["SpecialFunctions, "Random", "Statistics"])'
