@@ -36,9 +36,9 @@ jobs:
     - name: Setup PyCall to use GitHub Actions Python
       run: |
         julia -e 'using Pkg; Pkg.add("PyCall"); Pkg.build("PyCall")'
-          - name: Install Python dependencies
-        run: |
-          pip install julia
+    - name: Install Python dependencies
+      run: |
+        pip install julia
     - name: Initialize Julia in Python
       run: python -c "import julia; julia.install()
     - name: Install Julia Packages
