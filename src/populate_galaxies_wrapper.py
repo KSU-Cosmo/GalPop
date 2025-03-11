@@ -43,7 +43,8 @@ def populate_galaxies(
     s_velocity : array-like
         Subsample velocities
     HODparams : sequence
-        Sequence of HOD parameters (lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s)
+        Sequence of HOD parameters 
+        (lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s)
     rsd : bool, optional
         Whether to apply redshift-space distortions, by default True
     Lmin : float, optional
