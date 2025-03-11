@@ -19,7 +19,8 @@ def populate_galaxies(
     HODparams, rsd=True, Lmin=-1000, Lmax=1000
 ):
     """
-    Python wrapper for the Julia implementation of populate_galaxies that accepts individual arrays.
+    Python wrapper for the Julia implementation of populate_galaxies that 
+    accepts individual arrays.
 
     Parameters
     ----------
