@@ -64,12 +64,12 @@ def test_populate_galaxies():
     ]
 
     # Call the populate_galaxies function with separate h and s inputs
-    with patch.object(Main, "populate_galaxies_julia", return_value=ret_xyz):
-        galaxies = pgw.populate_galaxies(
-            h_mass, h_x, h_y, h_z, h_velocity, h_sigma, s_mass,
-            s_host_velocity, s_n_particles, s_x, s_y, s_z, s_velocity,
-            hod_params
-        )
+    #with patch.object(Main, "populate_galaxies_julia", return_value=ret_xyz):
+    galaxies = pgw.populate_galaxies(
+        h_mass, h_x, h_y, h_z, h_velocity, h_sigma, s_mass,
+        s_host_velocity, s_n_particles, s_x, s_y, s_z, s_velocity,
+        hod_params
+    )
 
     # Check that the output arrays match expected values
     assert np.array_equal(galaxies['x'], ret_xyz['x'])
