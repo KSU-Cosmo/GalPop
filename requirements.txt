@@ -1,6 +1,0 @@
-numpy
-scipy
-astropy
-julia
-pytest
-pytest-cov
