@@ -4,7 +4,7 @@ import sys
 from unittest.mock import patch, MagicMock
 
 # Import our helper first to ensure Julia is set up correctly
-from tests.julia_helper import Main, create_mock_return
+from .julia_helper import Main, create_mock_return
 
 # Fix the import path
 srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))

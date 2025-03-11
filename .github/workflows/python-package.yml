@@ -56,6 +56,12 @@ jobs:
           println("PyCall configured with Python: ", PyCall.python)
         '
 
+    # Ensure tests directory is a package
+    - name: Create __init__.py
+      run: |
+        touch tests/__init__.py
+        echo "Created tests/__init__.py"
+
     # Verify that everything is in place
     - name: Debug directory structure
       run: |
@@ -66,16 +72,17 @@ jobs:
         # Verify helper exists
         [ -f tests/julia_helper.py ] && echo "✓ julia_helper.py exists" || echo "✗ julia_helper.py missing"
         
-        # Verify test can import helper
-        python -c "import sys; sys.path.insert(0, '.'); import tests.julia_helper; print('✓ Successfully imported helper')" || echo "✗ Failed to import helper"
+        # Test importing the helper directly
+        cd ${{ github.workspace }}
+        python -c "import sys; sys.path.insert(0, '.'); from tests import julia_helper; print('✓ Successfully imported helper')" || echo "✗ Failed to import helper"
 
-    # Run tests 
+    # Run tests with modified import behavior
     - name: Test with pytest
       env:
         PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/src
       run: |
         echo "PYTHONPATH: $PYTHONPATH"
-        pytest -v tests/
+        pytest -p no:importlib -v tests/
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@main
