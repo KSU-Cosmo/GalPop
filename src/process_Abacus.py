@@ -5,7 +5,8 @@ import glob
 
 def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
     """
-    Process a single Abacus simulation slab file to extract halo and subhalo data.
+    Process a single Abacus simulation slab file to extract halo and subhalo
+    data.
 
     Parameters
     ----------
@@ -31,13 +32,17 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
     cat = CompaSOHaloCatalog(
         slabname,
         subsamples=dict(A=True, rv=True),
-        fields=['N', 'x_L2com', 'v_L2com', 'npstartA', 'npoutA', 'sigmav3d_L2com'],
+        fields=[
+            'N', 'x_L2com', 'v_L2com',
+            'npstartA', 'npoutA', 'sigmav3d_L2com'
+        ],
         cleaned=True,
     )
 
     # Extract scaling factors from header
     Mpart = cat.header['ParticleMassHMsun']
-    inv_velz2kms = 1 / (cat.header['VelZSpace_to_kms'] / cat.header['BoxSizeHMpc'])
+    inv_velz2kms = 1 / cat.header['VelZSpace_to_kms']
+    inv_velz2kms /= cat.header['BoxSizeHMpc']
 
     # Calculate halo masses and apply mass threshold
     Mh = Mpart * cat.halos["N"]
@@ -61,22 +66,22 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
     start_indices = np.zeros(len(n_particles), dtype=int)
     if len(n_particles) > 1:
         start_indices[1:] = np.cumsum(n_particles[:-1])
-    
+
     # Create the mask more efficiently
     total_length = np.sum(n_particles)
     sub_count_mask = np.zeros(total_length, dtype=bool)
-    
+
     for i, (start, length) in enumerate(zip(start_indices, mask_lengths)):
         sub_count_mask[start:start+length] = True
-    
+
     # Create host property arrays more efficiently
     # Only create for hosts that pass the mass threshold for subsamples
     host_mass_filter = Mh > pow(10, Mslow)
-    
+
     # Filter and repeat only the necessary host properties
     valid_hosts_indices = np.where(host_mass_filter)[0]
     valid_n_particles = n_particles[valid_hosts_indices]
-    
+
     # Generate arrays only for valid hosts
     host_masses = np.repeat(Mh[valid_hosts_indices], valid_n_particles)
     host_zvel = np.repeat(
@@ -147,7 +152,8 @@ def process_Abacus_directory(dir_path, Mhlow, Mslow, maxsats):
     Returns
     -------
     dict
-        Combined dictionary with halo and subsample data from all processed slabs
+        Combined dictionary with halo and subsample data from all processed
+        slabs
     """
     slablist = glob.glob(f"{dir_path}*.asdf")
     total_slabs = len(slablist)
@@ -177,14 +183,17 @@ def process_Abacus_directory(dir_path, Mhlow, Mslow, maxsats):
             # Append data from this slab to our temporary results
             for category in temp_results:
                 for key in temp_results[category]:
-                    temp_results[category][key].append(slab_result[category][key])
+                    tmp_slab = slab_result[category][key]
+                    temp_results[category][key].append(tmp_slab)
 
             successful_slabs += 1
 
             # Print progress
             print(f"  - Halos found: {len(slab_result['halo']['mass'])}")
-            print(f"  - Subsamples found: {len(slab_result['subsample']['mass'])}")
-            print(f"  - Progress: {successful_slabs}/{total_slabs} slabs processed successfully")
+            print(" - Subsamples found: ")
+            print(f" {len(slab_result['subsample']['mass'])}")
+            print(f"  - Progress: {successful_slabs}/{total_slabs} ", end="")
+            print("labs processed successfully")
 
         except Exception as e:
             failed_slabs.append((slab, str(e)))
@@ -198,7 +207,8 @@ def process_Abacus_directory(dir_path, Mhlow, Mslow, maxsats):
         for key in temp_results[category]:
             # Only concatenate if there are arrays to combine
             if temp_results[category][key]:
-                result[category][key] = np.concatenate(temp_results[category][key])
+                tmp_res = temp_results[category][key]
+                result[category][key] = np.concatenate(tmp_res)
             else:
                 result[category][key] = np.array([])
 

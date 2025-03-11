@@ -5,7 +5,7 @@ import sys
 srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
 sys.path.append(srcpath)
 
-import populate_galaxies_wrapper as pgw # noqa: E402
+import populate_galaxies_wrapper as pgw  # noqa: E402
 
 
 return_xyz = {'x': [1, 2],
