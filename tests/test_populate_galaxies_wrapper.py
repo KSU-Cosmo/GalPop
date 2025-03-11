@@ -2,7 +2,9 @@ import numpy as np
 import os
 import sys
 from unittest.mock import patch
-from julia import Main
+import julia
+julia.Julia(compiled_modules=False)  # Initializes Julia
+from julia import Main  # noqa: E402
 
 # Fix the import path
 srcpath = os.path.abspath(os.path.join(os.path.dirname(__file__), '../src'))
