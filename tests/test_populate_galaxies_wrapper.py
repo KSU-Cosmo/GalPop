@@ -55,9 +55,9 @@ def test_populate_galaxies():
         )
 
     # 1. Check that the output arrays have the same length
-    assert galaxies['x'] == [1, 2]
-    assert galaxies['y'] == [3, 4]
-    assert galaxies['z'] == [5, 6]
+    assert (galaxies['x'] == [1, 2]).all()
+    assert (galaxies['y'] == [3, 4]).all()
+    assert (galaxies['z'] == [5, 6]).all()
 
     # Check if mock was called
     mock_populate.assert_called_once()
