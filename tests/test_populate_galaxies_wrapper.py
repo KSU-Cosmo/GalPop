@@ -30,7 +30,7 @@ def test_populate_galaxies():
     s_z = np.array([100, 110, 120]),  # z coordinates
     s_velocity = np.array([10, 20, 30])  # Velocities
 
-    # Mock HOD parameters 
+    # Mock HOD parameters
     # [lnMcut, sigma, lnM1, kappa, alpha, alpha_c, alpha_s]
     hod_params = [
         np.log10(1e13),  # lnMcut
@@ -44,7 +44,7 @@ def test_populate_galaxies():
 
     # Call the populate_galaxies function with separate h and s inputs
     galaxies = pgw.populate_galaxies(
-        h_mass, h_x, h_y, h_z, h_velocity, h_sigma, s_mass, s_host_velocity, 
+        h_mass, h_x, h_y, h_z, h_velocity, h_sigma, s_mass, s_host_velocity,
         s_n_particles, s_x, s_y, s_z, s_velocity, hod_params
         )
 
