@@ -13,6 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.11"]
+        julia-version: ["1.11"]
 
     steps:
     - uses: actions/checkout@v4
@@ -37,8 +38,9 @@ jobs:
         python -m pip install flake8 pytest pytest-cov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-    # Cache Julia dependencies (but PyCall will always be rebuilt)
+    # Cache Julia installation and environment with proper ID
     - name: Cache Julia dependencies
+      id: cache-julia
       uses: actions/cache@v4
       with:
         path: |
@@ -53,35 +55,69 @@ jobs:
     - name: Install Julia
       uses: julia-actions/setup-julia@v2
       with:
-        version: "1.11"
+        version: ${{ matrix.julia-version }}
 
-    # Always rebuild PyCall
-    - name: Setup PyCall to use GitHub Actions Python (Always Rebuild)
+    # List directories to ensure files are where we expect
+    - name: Debug directory structure
       run: |
-        julia -e 'using Pkg;
-                  Pkg.add("PyCall");
-                  ENV["PYTHON"] = Sys.which("python");
-                  Pkg.build("PyCall")'
+        echo "Current directory:"
+        pwd
+        echo "Repository contents:"
+        ls -la
+        echo "Source directory:"
+        ls -la src || echo "src directory not found"
+        echo "Tests directory:"
+        ls -la tests || echo "tests directory not found"
 
-    # Install Julia Packages (always runs)
+    # Setup PyCall with explicit configuration
+    - name: Setup PyCall
+      run: |
+        python -c "import sys; print(sys.executable)"
+        julia --project=. -e '
+          using Pkg;
+          Pkg.add("PyCall");
+          ENV["PYTHON"] = readchomp(pipeline(`which python`));
+          println("Using Python: ", ENV["PYTHON"]);
+          Pkg.build("PyCall");
+          using PyCall;
+          println("PyCall configured with Python: ", PyCall.python);
+        '
+
+    # Install required Julia packages
     - name: Install Julia Packages
       run: |
-        julia -e 'using Pkg; Pkg.add(["SpecialFunctions", "Random", "Statistics"])'
+        julia --project=. -e '
+          using Pkg;
+          Pkg.add(["SpecialFunctions", "Random", "Statistics"]);
+        '
 
-    - name: Initialize Julia in Python
+    # Test Julia integration with Python
+    - name: Test Julia-Python integration
       run: |
-        python -c "import julia; julia.Julia(compiled_modules=False)"
+        python -c "
+        import julia
+        j = julia.Julia(compiled_modules=False)
+        from julia import Main
+        print('Julia version:', Main.eval('string(VERSION)'))
+        print('Julia working directory:', Main.eval('pwd()'))
+        "
 
+    # Lint with flake8
     - name: Lint with flake8
       run: |
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+    # Run tests with explicit paths and verbose output
     - name: Test with pytest
       env:
-        PYTHONPATH: .:src
+        PYTHONPATH: ${{ github.workspace }}:${{ github.workspace }}/src
+        JULIA_PROJECT: ${{ github.workspace }}
       run: |
-        pytest --cov-branch --cov-report=xml --cov=. tests/
+        echo "PYTHONPATH: $PYTHONPATH"
+        echo "JULIA_PROJECT: $JULIA_PROJECT"
+        python -c "import sys; print(sys.path)"
+        pytest -v --cov-branch --cov-report=xml --cov=. tests/
 
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@main
