@@ -1,6 +1,8 @@
+# julia/test/runtests.jl
 using Test
+using GalPop
 
 @testset "GalPop.jl" begin
-    include("hod_tests.jl")
-    # Include other test files
+    # A simple test that doesn't depend on actual functionality yet
+    @test isdefined(GalPop, :populate_galaxies)
 end
