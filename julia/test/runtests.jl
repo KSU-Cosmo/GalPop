@@ -3,6 +3,9 @@ using Test
 using GalPop
 
 @testset "GalPop.jl" begin
-    # A simple test that doesn't depend on actual functionality yet
+    # Basic module test
     @test isdefined(GalPop, :populate_galaxies)
+    
+    # Include the HOD tests
+    include("hod_tests.jl")
 end
