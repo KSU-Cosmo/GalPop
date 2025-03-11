@@ -43,20 +43,26 @@ jobs:
       with:
         version: "1.11"
 
-    # Cache Julia dependencies
+    # Cache Julia dependencies (with environment and installed packages)
     - name: Cache Julia dependencies
       uses: actions/cache@v4
       with:
         path: |
           ~/.julia/packages
           ~/.julia/environments
+          ~/.julia/artifacts  # Add this to help cache the artifacts as well
         key: ${{ runner.os }}-julia-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
         restore-keys: |
           ${{ runner.os }}-julia-
 
     - name: Setup PyCall to use GitHub Actions Python
       run: |
-        julia -e 'using Pkg; if !haskey(Pkg.installed(), "PyCall") Pkg.add("PyCall"); end; ENV["PYTHON"] = Sys.which("python"); Pkg.build("PyCall")'
+        julia -e 'using Pkg; 
+                  if !haskey(Pkg.installed(), "PyCall") 
+                    Pkg.add("PyCall"); 
+                  end; 
+                  ENV["PYTHON"] = Sys.which("python"); 
+                  Pkg.build("PyCall")'
 
     - name: Initialize Julia in Python
       run: |
