@@ -109,12 +109,30 @@ jobs:
     name: Documentation
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # This allows the job to push to gh-pages
+      contents: write
     steps:
       - uses: actions/checkout@v3
       - uses: julia-actions/setup-julia@v1
         with:
           version: '1'
+      - name: Debug directory structure
+        run: |
+          echo "Current directory:"
+          pwd
+          echo "Directory contents:"
+          ls -la
+          echo "Docs directory contents (if exists):"
+          if [ -d "docs" ]; then
+            ls -la docs
+            if [ -f "docs/Project.toml" ]; then
+              echo "docs/Project.toml exists"
+              cat docs/Project.toml
+            else
+              echo "docs/Project.toml missing"
+            fi
+          else
+            echo "docs directory missing"
+          fi
       - name: Configure docs environment
         run: |
           julia --project=docs/ -e '
@@ -125,4 +143,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-              julia --project=docs/ docs/make.jl
+          julia --project=docs/ docs/make.jl
