@@ -5,6 +5,8 @@ using Random
 using Statistics
 using GalPop
 using Mocking
+Mocking.activate()
+using Random
 
 @testset "HOD Module Tests" begin
     
