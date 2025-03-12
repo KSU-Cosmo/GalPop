@@ -7,3 +7,5 @@
 [![Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://KSU-Cosmo.github.io/GalPop.jl/dev)
 
 GalPop is a tool for populating dark matter halos with galaxies using the Halo Occupation Distribution (HOD) model.
+
+More to come.
