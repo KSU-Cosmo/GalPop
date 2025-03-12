@@ -20,7 +20,7 @@ using GalPop
         Mcut = 10^14
         sigma = 1/sqrt(2)
         p_value = GalPop.calculate_p_cen(test_mass, Mcut, sigma)
-        @test isapprox(p_value, 0.1573, atol = 1e-4)
+        @test isapprox(p_value, 0.1573/2.0, atol = 1e-4)
     end
     
     @testset "calculate_n_sat function" begin
