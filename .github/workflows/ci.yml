@@ -38,7 +38,8 @@ jobs:
         with:
           file: './lcov.info'
           flags: julia
-
+          token: ${{ secrets.CODECOV_TOKEN }}
+          
   python-test:
     name: Python Test
     runs-on: ubuntu-latest
