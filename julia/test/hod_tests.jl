@@ -70,16 +70,16 @@ randn_patch = @patch randn() = 0.5
         )
 
         hod_params = (
-            lnMcut: 10^13,
-            sigma: 0.1,
-            lnM1: 10^14,
-            kappa: 1.0,
-            alpha: 1.0,
-            alpha_c: 1.0,
-            alpha_s: 2.0,
-            rsd: true,
-            Lmin: -1000.0,
-            Lmax: 1000.0
+            lnMcut = 10^13,
+            sigma = 0.1,
+            lnM1 = 10^14,
+            kappa = 1.0,
+            alpha = 1.0,
+            alpha_c = 1.0,
+            alpha_s = 2.0,
+            rsd = true,
+            Lmin = -1000.0,
+            Lmax = 1000.0
         )
 
         x_out = [3.0, 4.0, 3.0, 4.0]
