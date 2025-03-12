@@ -8,8 +8,8 @@ using Mocking
 Mocking.activate()
 using Random
 
-@mock rand() = 0.5
-@mock randn() = 0.5
+rand_patch = @patch rand() = 0.5
+randn_patch = @patch randn() = 0.5
 
 @testset "HOD Module Tests" begin
     
@@ -75,8 +75,12 @@ using Random
         y_out = [3.0, 4.0, 3.0, 4.0]
         z_out = [0.5, 999.5, 2.0, −991.5]
         count_out = 4
-
-        x, y, z, count = populate_galaxies(halos, subhalos, hod_params)
+        
+        apply([rand_patch, randn_patch]) do
+            begin
+                x, y, z, count = populate_galaxies(halos, subhalos, hod_params)
+            end
+        end
 
         @test isapprox(x, x_out, atol = 1e-4)
         @test isapprox(y, y_out)
