@@ -88,15 +88,13 @@ randn_patch = @patch randn() = 0.5
         count_out = 4
 
         apply([rand_patch, randn_patch]) do
-            begin
-                x, y, z, count = populate_galaxies(halos, subhalos, hod_params)
-            end
+            x, y, z, count = populate_galaxies(halos, subhalos, hod_params)
+            @test isapprox(x, x_out, atol = 1e-4)
+            @test isapprox(y, y_out)
+            @test isapprox(z, z_out)
+            @test isapprox(count, count_out)
         end
 
-        @test isapprox(x, x_out, atol = 1e-4)
-        @test isapprox(y, y_out)
-        @test isapprox(z, z_out)
-        @test isapprox(count, count_out)
     end
 
 end
