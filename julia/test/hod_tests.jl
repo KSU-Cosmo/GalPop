@@ -69,13 +69,24 @@ randn_patch = @patch randn() = 0.5
             velocity = [-2.0, -1.0, 1.0, 2.0]
         )
 
-        hod_params = [10^13, 0.1, 10^14-1.0, 1.0, 1.0, 2.0, 0.0, true, -1000.0, 1000.0]
+        hod_params = (
+            lnMcut: 10^13,
+            sigma: 0.1,
+            lnM1: 10^14,
+            kappa: 1.0,
+            alpha: 1.0,
+            alpha_c: 1.0,
+            alpha_s: 2.0,
+            rsd: true,
+            Lmin: -1000.0,
+            Lmax: 1000.0
+        )
 
         x_out = [3.0, 4.0, 3.0, 4.0]
         y_out = [3.0, 4.0, 3.0, 4.0]
         z_out = [0.5, 999.5, 2.0, −991.5]
         count_out = 4
-        
+
         apply([rand_patch, randn_patch]) do
             begin
                 x, y, z, count = populate_galaxies(halos, subhalos, hod_params)
