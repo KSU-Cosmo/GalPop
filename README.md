@@ -8,4 +8,4 @@
 
 GalPop is a tool for populating dark matter halos with galaxies using the Halo Occupation Distribution (HOD) model.
 
-More to come.
+More to come. .
