@@ -8,6 +8,9 @@ using Mocking
 Mocking.activate()
 using Random
 
+@mock rand() = 0.5
+@mock randn() = 0.5
+
 @testset "HOD Module Tests" begin
     
     @testset "calculate_p_cen function" begin
@@ -72,11 +75,8 @@ using Random
         y_out = [3.0, 4.0, 3.0, 4.0]
         z_out = [0.5, 999.5, 2.0, −991.5]
         count_out = 4
-        @mock rand() = 0.5 begin
-            @mock randn() = 0.5 begin
-                x, y, z, count = populate_galaxies(halos, subhalos, hod_params)
-            end
-        end
+
+        x, y, z, count = populate_galaxies(halos, subhalos, hod_params)
 
         @test isapprox(x, x_out, atol = 1e-4)
         @test isapprox(y, y_out)
