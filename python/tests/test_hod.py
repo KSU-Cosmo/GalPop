@@ -1,51 +1,51 @@
 import os
 import sys
 import numpy as np
+import pytest
 from julia import Julia
 from julia import Main
-import unittest
 
-# Add the parent directory to the path so we can import the galpop module
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+# Add the parent directory to the path if needed
+# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from galpop.hod import populate_galaxies, GalPopWrapper
 
 
-class TestHODWrapper(unittest.TestCase):
+class TestHODWrapper:
     """Test cases for the HOD Python wrapper."""
 
-    def setUp(self):
-        """Set up test fixtures, including initializing Julia environment."""
+    @pytest.fixture(scope="class")
+    def julia_setup(self):
+        """Set up Julia environment."""
         # Initialize Julia
         jl = Julia(compiled_modules=False)
 
         # Find the Julia project path
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        self.julia_project_path = os.path.abspath(
-            os.path.join(current_dir, "..", "..", "..", "julia")
-        )
+        julia_project_path = os.path.abspath(os.path.join(current_dir, "..", "..", "julia"))
 
         # Activate the project and load the module
-        Main.eval(f'using Pkg; Pkg.activate("{self.julia_project_path}")')
-        Main.eval(f'include(joinpath("{self.julia_project_path}", "src", "hod.jl"))')
+        Main.eval(f'using Pkg; Pkg.activate("{julia_project_path}")')
+        Main.eval(f'include(joinpath("{julia_project_path}", "src", "hod.jl"))')
 
         # Try to determine module structure
         try:
             Main.eval("using .HOD")
-            self.module_name = "HOD"
+            module_name = "HOD"
         except Exception:
-            self.module_name = "Main"
+            module_name = "Main"
 
-        # Create test data
-        self.create_test_data()
+        return {"julia_project_path": julia_project_path, "module_name": module_name}
 
-    def create_test_data(self):
+    @pytest.fixture(scope="class")
+    def test_data(self):
         """Create small test datasets for halos and subhalos."""
-        # Create small test arrays
+        # Create small test arrays with fixed random seed for reproducibility
+        np.random.seed(42)
         n_halos = 100
         n_subhalos = 200
 
         # Halo data
-        self.halos = {
+        halos = {
             "mass": np.random.uniform(1e12, 1e14, n_halos).astype(np.float32),
             "x": np.random.uniform(0, 100, n_halos).astype(np.float32),
             "y": np.random.uniform(0, 100, n_halos).astype(np.float32),
@@ -55,7 +55,7 @@ class TestHODWrapper(unittest.TestCase):
         }
 
         # Subhalo data
-        self.subhalos = {
+        subhalos = {
             "mass": np.random.uniform(1e10, 1e12, n_subhalos).astype(np.float32),
             "host_velocity": np.random.uniform(-500, 500, n_subhalos).astype(np.float32),
             "n_particles": np.random.randint(100, 1000, n_subhalos).astype(np.int32),
@@ -66,7 +66,7 @@ class TestHODWrapper(unittest.TestCase):
         }
 
         # HOD parameters
-        self.hod_params = {
+        hod_params = {
             "lnMcut": 12.0,
             "sigma": 0.2,
             "lnM1": 13.0,
@@ -79,12 +79,19 @@ class TestHODWrapper(unittest.TestCase):
             "Lmax": 100.0,
         }
 
-    def test_wrapper_output_matches_julia(self):
+        return {"halos": halos, "subhalos": subhalos, "hod_params": hod_params}
+
+    def test_wrapper_output_matches_julia(self, julia_setup, test_data):
         """Test that the Python wrapper output matches the pure Julia output."""
+        # Extract data from fixtures
+        julia_project_path = julia_setup["julia_project_path"]
+        module_name = julia_setup["module_name"]
+        halos = test_data["halos"]
+        subhalos = test_data["subhalos"]
+        hod_params = test_data["hod_params"]
+
         # Run the Python wrapper
-        py_result = populate_galaxies(
-            self.halos, self.subhalos, self.hod_params, self.julia_project_path
-        )
+        py_result = populate_galaxies(halos, subhalos, hod_params, julia_project_path)
 
         # Create Julia NamedTuples for the test data
         Main.eval(
@@ -130,33 +137,33 @@ class TestHODWrapper(unittest.TestCase):
         )
 
         # Run the pure Julia implementation
-        Main.h_mass = Main.Array(self.halos["mass"])
-        Main.h_x = Main.Array(self.halos["x"])
-        Main.h_y = Main.Array(self.halos["y"])
-        Main.h_z = Main.Array(self.halos["z"])
-        Main.h_velocity = Main.Array(self.halos["velocity"])
-        Main.h_sigma = Main.Array(self.halos["sigma"])
+        Main.h_mass = Main.Array(halos["mass"])
+        Main.h_x = Main.Array(halos["x"])
+        Main.h_y = Main.Array(halos["y"])
+        Main.h_z = Main.Array(halos["z"])
+        Main.h_velocity = Main.Array(halos["velocity"])
+        Main.h_sigma = Main.Array(halos["sigma"])
 
-        Main.s_mass = Main.Array(self.subhalos["mass"])
-        Main.s_host_velocity = Main.Array(self.subhalos["host_velocity"])
-        Main.s_n_particles = Main.Array(self.subhalos["n_particles"])
-        Main.s_x = Main.Array(self.subhalos["x"])
-        Main.s_y = Main.Array(self.subhalos["y"])
-        Main.s_z = Main.Array(self.subhalos["z"])
-        Main.s_velocity = Main.Array(self.subhalos["velocity"])
+        Main.s_mass = Main.Array(subhalos["mass"])
+        Main.s_host_velocity = Main.Array(subhalos["host_velocity"])
+        Main.s_n_particles = Main.Array(subhalos["n_particles"])
+        Main.s_x = Main.Array(subhalos["x"])
+        Main.s_y = Main.Array(subhalos["y"])
+        Main.s_z = Main.Array(subhalos["z"])
+        Main.s_velocity = Main.Array(subhalos["velocity"])
 
         Main.eval(
             f"""
         halos, subhalos, hod_params = create_test_tuples(
             h_mass, h_x, h_y, h_z, h_velocity, h_sigma,
             s_mass, s_host_velocity, s_n_particles, s_x, s_y, s_z, s_velocity,
-            {self.hod_params["lnMcut"]}, {self.hod_params["sigma"]}, {self.hod_params["lnM1"]},
-            {self.hod_params["kappa"]}, {self.hod_params["alpha"]}, {self.hod_params["alpha_c"]},
-            {self.hod_params["alpha_s"]}, {str(self.hod_params["rsd"]).lower()}, 
-            {self.hod_params["Lmin"]}, {self.hod_params["Lmax"]}
+            {hod_params["lnMcut"]}, {hod_params["sigma"]}, {hod_params["lnM1"]},
+            {hod_params["kappa"]}, {hod_params["alpha"]}, {hod_params["alpha_c"]},
+            {hod_params["alpha_s"]}, {str(hod_params["rsd"]).lower()}, 
+            {hod_params["Lmin"]}, {hod_params["Lmax"]}
         )
         
-        julia_result = {self.module_name}.populate_galaxies(halos, subhalos, hod_params)
+        julia_result = {module_name}.populate_galaxies(halos, subhalos, hod_params)
         """
         )
 
@@ -167,40 +174,37 @@ class TestHODWrapper(unittest.TestCase):
         julia_count = int(Main.eval("julia_result.count"))
 
         # Compare results
-        self.assertEqual(py_result["count"], julia_count, "Galaxy counts don't match")
+        assert py_result["count"] == julia_count, "Galaxy counts don't match"
 
         # Since there could be randomness in the HOD, sort arrays before comparing
         # to account for potential different ordering
-        self.assertTrue(
-            np.allclose(np.sort(py_result["x"]), np.sort(julia_x)), "X coordinates don't match"
-        )
-        self.assertTrue(
-            np.allclose(np.sort(py_result["y"]), np.sort(julia_y)), "Y coordinates don't match"
-        )
-        self.assertTrue(
-            np.allclose(np.sort(py_result["z"]), np.sort(julia_z)), "Z coordinates don't match"
-        )
+        assert np.allclose(np.sort(py_result["x"]), np.sort(julia_x)), "X coordinates don't match"
+        assert np.allclose(np.sort(py_result["y"]), np.sort(julia_y)), "Y coordinates don't match"
+        assert np.allclose(np.sort(py_result["z"]), np.sort(julia_z)), "Z coordinates don't match"
 
         print(
             f"Test passed! Both implementations produced {py_result['count']} galaxies with matching coordinates."
         )
 
-    def test_performance(self):
+    def test_performance(self, julia_setup, test_data):
         """Test the performance of the Python wrapper."""
         import time
 
+        # Extract data from fixtures
+        julia_project_path = julia_setup["julia_project_path"]
+        halos = test_data["halos"]
+        subhalos = test_data["subhalos"]
+        hod_params = test_data["hod_params"]
+
         # Warm-up run
-        _ = populate_galaxies(self.halos, self.subhalos, self.hod_params, self.julia_project_path)
+        _ = populate_galaxies(halos, subhalos, hod_params, julia_project_path)
 
         # Timed run
         start_time = time.time()
-        result = populate_galaxies(
-            self.halos, self.subhalos, self.hod_params, self.julia_project_path
-        )
+        result = populate_galaxies(halos, subhalos, hod_params, julia_project_path)
         elapsed = time.time() - start_time
 
         print(f"Performance test: Generated {result['count']} galaxies in {elapsed:.6f} seconds")
 
-
-if __name__ == "__main__":
-    unittest.main()
+        # No assertion - this is just for performance tracking
+        assert True
