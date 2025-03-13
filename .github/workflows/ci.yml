@@ -1,3 +1,4 @@
+# .github/workflows/ci.yml
 name: CI
 
 on:
@@ -61,7 +62,7 @@ jobs:
           fi
       - name: Install Julia dependencies for PyJulia
         run: |
-          julia -e 'using Pkg; Pkg.add("PyCall")'
+          julia -e 'using Pkg; Pkg.add("PyCall"); Pkg.add("SpecialFunctions")'
           python -c "import julia; julia.install()"
       - name: Lint with flake8
         run: |
