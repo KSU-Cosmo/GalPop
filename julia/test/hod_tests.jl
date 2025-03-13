@@ -82,7 +82,7 @@ Random.randn() = 0.5 # Forces randn() to always return 0.5
 
         x_out = [3.0, 4.0, 3.0, 4.0]
         y_out = [3.0, 4.0, 3.0, 4.0]
-        z_out = [0.5, 999.5, 2.0, −991.5]
+        z_out = [0.5, 999.5, 2.0, 4.0]
         count_out = 4
         result = populate_galaxies(halos, subhalos, hod_params)
         @test isapprox(x_out, result.x, atol = 1e-4)

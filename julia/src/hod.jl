@@ -78,9 +78,6 @@ Populates galaxies based on halo and subhalo data using HOD parameters.
 - NamedTuple with (x, y, z, count) containing galaxy positions and total count
 """
 function populate_galaxies(halos, subhalos, hod_params)
-    println("**pop gal**")
-    flush(stdout)
-    @info "pop gal"
     # Extract arrays from the NamedTuples
     h_mass = halos.mass
     h_x = halos.x
