@@ -12,4 +12,6 @@ using GalPop
     
     # Include the HOD tests
     include("hod_tests.jl")
+
+    include("file_io_tests.jl")
 end
