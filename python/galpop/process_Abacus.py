@@ -81,7 +81,9 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
 
     # Generate arrays only for valid hosts
     host_masses = np.repeat(Mh[valid_hosts_indices], valid_n_particles)
-    host_zvel = np.repeat(cat.halos["v_L2com"][valid_hosts_indices, 2], valid_n_particles)
+    host_zvel = np.repeat(
+        cat.halos["v_L2com"][valid_hosts_indices, 2], valid_n_particles
+    )
 
     # Calculate cumulative particle counts for indexing
     cumul_particles = np.zeros(len(n_particles) + 1, dtype=int)
@@ -112,7 +114,8 @@ def process_Abacus_slab(slabname, Mhlow, Mslow, maxsats):
     # Extract and scale subsample properties
     subsample_props = {
         "mass": host_masses[sub_count_mask[all_particles_mask]].value,
-        "host_velocity": host_zvel[sub_count_mask[all_particles_mask]].value * inv_velz2kms,
+        "host_velocity": host_zvel[sub_count_mask[all_particles_mask]].value
+        * inv_velz2kms,
         # Use the larger of n_particles and maxsats
         "n_particles": smallest_n_particles.value,
         "x": cat.subsamples["pos"][Smask, 0].value,

@@ -25,7 +25,9 @@ class TestHODWrapper:
 
         # Find the Julia project path
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        julia_project_path = os.path.abspath(os.path.join(current_dir, "..", "..", "julia"))
+        julia_project_path = os.path.abspath(
+            os.path.join(current_dir, "..", "..", "julia")
+        )
 
         # Activate the project and load the module
         Main.eval(f'using Pkg; Pkg.activate("{julia_project_path}")')
@@ -61,7 +63,9 @@ class TestHODWrapper:
         # Subhalo data
         subhalos = {
             "mass": np.random.uniform(1e10, 1e12, n_subhalos).astype(np.float32),
-            "host_velocity": np.random.uniform(-500, 500, n_subhalos).astype(np.float32),
+            "host_velocity": np.random.uniform(-500, 500, n_subhalos).astype(
+                np.float32
+            ),
             "n_particles": np.random.randint(100, 1000, n_subhalos).astype(np.int32),
             "x": np.random.uniform(0, 100, n_subhalos).astype(np.float32),
             "y": np.random.uniform(0, 100, n_subhalos).astype(np.float32),
@@ -185,9 +189,15 @@ class TestHODWrapper:
 
         # Since there could be randomness in the HOD, sort arrays before comparing
         # to account for potential different ordering
-        assert np.allclose(np.sort(py_result["x"]), np.sort(julia_x)), "X coordinates don't match"
-        assert np.allclose(np.sort(py_result["y"]), np.sort(julia_y)), "Y coordinates don't match"
-        assert np.allclose(np.sort(py_result["z"]), np.sort(julia_z)), "Z coordinates don't match"
+        assert np.allclose(
+            np.sort(py_result["x"]), np.sort(julia_x)
+        ), "X coordinates don't match"
+        assert np.allclose(
+            np.sort(py_result["y"]), np.sort(julia_y)
+        ), "Y coordinates don't match"
+        assert np.allclose(
+            np.sort(py_result["z"]), np.sort(julia_z)
+        ), "Z coordinates don't match"
 
         print(
             f"Test passed! Both implementations produced {py_result['count']} galaxies with matching coordinates."
@@ -211,7 +221,9 @@ class TestHODWrapper:
         result = populate_galaxies(halos, subhalos, hod_params, julia_project_path)
         elapsed = time.time() - start_time
 
-        print(f"Performance test: Generated {result['count']} galaxies in {elapsed:.6f} seconds")
+        print(
+            f"Performance test: Generated {result['count']} galaxies in {elapsed:.6f} seconds"
+        )
 
         # No assertion - this is just for performance tracking
         assert True
