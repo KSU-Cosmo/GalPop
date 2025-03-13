@@ -179,6 +179,8 @@ class TestHODWrapper:
 
         # Since there could be randomness in the HOD, sort arrays before comparing
         # to account for potential different ordering
+        print(np.sort(py_results["x"]))
+        print(np.sort(julia_x))
         assert np.allclose(np.sort(py_result["x"]), np.sort(julia_x)), "X coordinates don't match"
         assert np.allclose(np.sort(py_result["y"]), np.sort(julia_y)), "Y coordinates don't match"
         assert np.allclose(np.sort(py_result["z"]), np.sort(julia_z)), "Z coordinates don't match"
