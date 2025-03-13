@@ -9,6 +9,7 @@ class GalPopWrapper:
     """
     Performance-optimized Python wrapper for the HOD function in GalPop.
     """
+
     def __init__(self, julia_project_path=None, precompile=True):
         """
         Initialize the wrapper by setting up Julia environment.
@@ -28,15 +29,15 @@ class GalPopWrapper:
         if julia_project_path is None:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             julia_project_path = os.path.abspath(
-                os.path.join(current_dir, '..', '..', '..', 'julia')
-                )
+                os.path.join(current_dir, "..", "..", "..", "julia")
+            )
 
         # Check if the path exists
-        hod_file_path = os.path.join(julia_project_path, 'src', 'hod.jl')
+        hod_file_path = os.path.join(julia_project_path, "src", "hod.jl")
         if not os.path.exists(hod_file_path):
             raise FileNotFoundError(
                 f"Could not find src/hod.jl in {julia_project_path}"
-                )
+            )
 
         # Activate the Julia project
         Main.eval(f'using Pkg; Pkg.activate("{julia_project_path}")')
@@ -44,14 +45,15 @@ class GalPopWrapper:
 
         # Try to determine module structure
         try:
-            Main.eval('using .HOD')
+            Main.eval("using .HOD")
             self.module_name = "HOD"
         except:
             self.module_name = "Main"
 
         # Create a performance-optimized wrapper function in Julia
         # This avoids recreating NamedTuples for every call
-        Main.eval(f"""
+        Main.eval(
+            f"""
         function fast_populate_galaxies(
             h_mass, h_x, h_y, h_z, h_velocity, h_sigma,
             s_mass, s_host_velocity, s_n_particles, s_x, s_y, s_z, s_velocity,
@@ -95,7 +97,8 @@ class GalPopWrapper:
             return {self.module_name}.populate_galaxies(halos, subhalos,
                     hod_params)
         end
-        """)
+        """
+        )
 
         # Store reference to the optimized function
         self.fast_populate_galaxies = Main.fast_populate_galaxies
@@ -106,13 +109,14 @@ class GalPopWrapper:
 
     def _precompile(self):
         """
-        Precompile the function with dummy data to improve performance for the 
+        Precompile the function with dummy data to improve performance for the
         first call.
         """
         try:
             # Create small arrays for precompilation
             dummy_size = 10
-            Main.eval(f"""
+            Main.eval(
+                f"""
             # Create dummy data for precompilation
             dummy_h_mass = ones(Float32, {dummy_size})
             dummy_h_x = ones(Float32, {dummy_size})
@@ -137,7 +141,8 @@ class GalPopWrapper:
                 dummy_s_x, dummy_s_y, dummy_s_z, dummy_s_velocity,
                 12.0, 0.2, 13.0, 1.0, 1.0, 0.3, 0.2, true, 0.0, 100.0
             )
-            """)
+            """
+            )
         except Exception as e:
             print(f"Precompilation warning (non-critical): {e}")
 
@@ -145,7 +150,7 @@ class GalPopWrapper:
         self,
         halos: Dict[str, np.ndarray],
         subhalos: Dict[str, np.ndarray],
-        hod_params: Dict[str, Union[float, bool]]
+        hod_params: Dict[str, Union[float, bool]],
     ) -> Dict[str, Union[np.ndarray, int]]:
         """
         Performance-optimized wrapper for the Julia populate_galaxies function.
@@ -158,26 +163,38 @@ class GalPopWrapper:
             Dictionary containing subhalo properties
         hod_params : dict
             Dictionary containing HOD parameters
-        
+
         Returns
         -------
         dict
             Dictionary with galaxy positions and total count
         """
-        # Pass individual arrays directly to avoid creating temporary 
+        # Pass individual arrays directly to avoid creating temporary
         # NamedTuples in Python
         result = self.fast_populate_galaxies(
-            halos["mass"], halos["x"], halos["y"], halos["z"], 
-            halos["velocity"], halos["sigma"],
-
-            subhalos["mass"], subhalos["host_velocity"],
+            halos["mass"],
+            halos["x"],
+            halos["y"],
+            halos["z"],
+            halos["velocity"],
+            halos["sigma"],
+            subhalos["mass"],
+            subhalos["host_velocity"],
             subhalos["n_particles"],
-            subhalos["x"], subhalos["y"], subhalos["z"], subhalos["velocity"],
-
-            hod_params["lnMcut"], hod_params["sigma"], hod_params["lnM1"],
-            hod_params["kappa"], hod_params["alpha"], hod_params["alpha_c"],
-            hod_params["alpha_s"], hod_params["rsd"], hod_params["Lmin"],
-            hod_params["Lmax"]
+            subhalos["x"],
+            subhalos["y"],
+            subhalos["z"],
+            subhalos["velocity"],
+            hod_params["lnMcut"],
+            hod_params["sigma"],
+            hod_params["lnM1"],
+            hod_params["kappa"],
+            hod_params["alpha"],
+            hod_params["alpha_c"],
+            hod_params["alpha_s"],
+            hod_params["rsd"],
+            hod_params["Lmin"],
+            hod_params["Lmax"],
         )
 
         # Convert result to Python
@@ -186,7 +203,7 @@ class GalPopWrapper:
             "x": np.array(result[0]),
             "y": np.array(result[1]),
             "z": np.array(result[2]),
-            "count": int(result[3])
+            "count": int(result[3]),
         }
 
 
@@ -195,7 +212,7 @@ def populate_galaxies(
     halos_data: Dict[str, np.ndarray],
     subhalos_data: Dict[str, np.ndarray],
     hod_pars: Dict[str, Union[float, bool]],
-    julia_path=None
+    julia_path=None,
 ) -> Dict[str, Union[np.ndarray, int]]:
     """
     Fast convenience function to call the Julia populate_galaxies function.
@@ -218,7 +235,7 @@ def populate_galaxies(
     """
     # Use a global wrapper to avoid initialization costs for repeated calls
     global _wrapper
-    if '_wrapper' not in globals():
+    if "_wrapper" not in globals():
         _wrapper = GalPopWrapper(julia_path)
 
     return _wrapper.populate_galaxies(halos_data, subhalos_data, hod_pars)
@@ -232,7 +249,7 @@ if __name__ == "__main__":
         "y": np.array([15.0, 25.0, 35.0], dtype=np.float32),
         "z": np.array([5.0, 15.0, 25.0], dtype=np.float32),
         "velocity": np.array([100.0, 200.0, 300.0], dtype=np.float32),
-        "sigma": np.array([50.0, 70.0, 90.0], dtype=np.float32)
+        "sigma": np.array([50.0, 70.0, 90.0], dtype=np.float32),
     }
 
     subhalos = {
@@ -242,7 +259,7 @@ if __name__ == "__main__":
         "x": np.array([12.0, 22.0, 32.0], dtype=np.float32),
         "y": np.array([17.0, 27.0, 37.0], dtype=np.float32),
         "z": np.array([7.0, 17.0, 27.0], dtype=np.float32),
-        "velocity": np.array([120.0, 220.0, 320.0], dtype=np.float32)
+        "velocity": np.array([120.0, 220.0, 320.0], dtype=np.float32),
     }
 
     hod_params = {
@@ -255,11 +272,12 @@ if __name__ == "__main__":
         "alpha_s": 0.2,
         "rsd": True,
         "Lmin": 0.0,
-        "Lmax": 100.0
+        "Lmax": 100.0,
     }
 
     # Performance testing
     import time
+
     start = time.time()
     result = populate_galaxies(halos, subhalos, hod_params)
     end = time.time()
