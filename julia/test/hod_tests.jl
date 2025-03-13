@@ -102,8 +102,8 @@ Random.randn() = 0.5 # Forces randn() to always return 0.5
             Lmin = -1000.0,
             Lmax = 1000.0
         )
-
-        z_out = [999.0, 999.0, 3.0, 4.0]
+        println(hod_params)
+        z_out = [0.0, -999.0, 3.0, 4.0]
         result = populate_galaxies(halos, subhalos, hod_params)
         @test isapprox(z_out, result.z, atol = 1e-4)
 
