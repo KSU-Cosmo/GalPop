@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "julia",
+            "request": "launch",
+            "name": "Run GalPop tests",
+            "program": "${workspaceFolder}/julia/test/runtests.jl",
+            "stopOnEntry": false,
+            "cwd": "${workspaceFolder}/julia",
+            "juliaEnv": "${workspaceFolder}/julia"
+        }
+    ]
+}

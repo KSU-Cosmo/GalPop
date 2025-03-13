@@ -1,4 +1,8 @@
 # julia/test/runtests.jl
+using Pkg
+# Ensure we're in the right environment
+Pkg.activate(".")
+# Develop the package in-place
 using Test
 using GalPop
 

@@ -78,6 +78,9 @@ Populates galaxies based on halo and subhalo data using HOD parameters.
 - NamedTuple with (x, y, z, count) containing galaxy positions and total count
 """
 function populate_galaxies(halos, subhalos, hod_params)
+    println("**pop gal**")
+    flush(stdout)
+    @info "pop gal"
     # Extract arrays from the NamedTuples
     h_mass = halos.mass
     h_x = halos.x
@@ -118,7 +121,6 @@ function populate_galaxies(halos, subhalos, hod_params)
 
     # Calculate central galaxy probabilities
     p_cen = calculate_p_cen(h_mass, Mcut, sigma)
-
     # Process central galaxies
     h_count = 0
     @inbounds for i in 1:length(p_cen)
@@ -140,7 +142,6 @@ function populate_galaxies(halos, subhalos, hod_params)
 
     # Calculate subhalo central probabilities
     p_cen_sat = calculate_p_cen(s_mass, Mcut, sigma)
-
     # Process satellite galaxies
     s_count = h_count
     @inbounds for i in 1:length(s_mass)
