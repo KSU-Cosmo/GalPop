@@ -66,15 +66,16 @@ class TestHODWrapper:
         }
 
         # HOD parameters
+        # Make sure all galaxies make it
         hod_params = {
-            "lnMcut": 12.0,
+            "lnMcut": 8.0,
             "sigma": 0.2,
-            "lnM1": 13.0,
+            "lnM1": 11.0,
             "kappa": 1.0,
             "alpha": 1.0,
-            "alpha_c": 0.3,
-            "alpha_s": 0.2,
-            "rsd": True,
+            "alpha_c": 0.0,
+            "alpha_s": 1.0,
+            "rsd": False,
             "Lmin": 0.0,
             "Lmax": 100.0,
         }
