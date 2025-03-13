@@ -70,7 +70,7 @@ class TestHODWrapper:
         hod_params = {
             "lnMcut": 8.0,
             "sigma": 0.2,
-            "lnM1": 11.0,
+            "lnM1": 8.0,
             "kappa": 1.0,
             "alpha": 1.0,
             "alpha_c": 0.0,
