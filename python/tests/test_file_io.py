@@ -67,9 +67,7 @@ def test_load_from_hdf5(sample_data, temp_hdf5_file):
     loaded_data = load_from_hdf5(temp_hdf5_file)
 
     # Check structure is preserved
-    assert set(loaded_data.keys()) == set(
-        sample_data.keys()
-    ), "Top-level keys don't match"
+    assert set(loaded_data.keys()) == set(sample_data.keys()), "Top-level keys don't match"
 
     # Check each group has the right keys
     for group in sample_data.keys():
@@ -128,9 +126,7 @@ def test_large_data_handling():
 
         # Verify key parts of the data
         assert loaded_data["halo"]["mass"].shape == large_data["halo"]["mass"].shape
-        assert np.allclose(
-            loaded_data["halo"]["positions"], large_data["halo"]["positions"]
-        )
+        assert np.allclose(loaded_data["halo"]["positions"], large_data["halo"]["positions"])
     finally:
         # Clean up
         if os.path.exists(temp_filename):
@@ -144,9 +140,7 @@ def test_julia_compatibility():
     would need to be tested in a Julia environment.
     """
     # Create test data
-    test_data = {
-        "halo": {"mass": np.array([1.0, 2.0, 3.0]), "x": np.array([10.0, 20.0, 30.0])}
-    }
+    test_data = {"halo": {"mass": np.array([1.0, 2.0, 3.0]), "x": np.array([10.0, 20.0, 30.0])}}
 
     with tempfile.NamedTemporaryFile(suffix=".h5", delete=False) as f:
         temp_filename = f.name

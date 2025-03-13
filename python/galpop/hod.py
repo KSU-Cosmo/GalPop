@@ -35,9 +35,7 @@ class GalPopWrapper:
         # Check if the path exists
         hod_file_path = os.path.join(julia_project_path, "src", "hod.jl")
         if not os.path.exists(hod_file_path):
-            raise FileNotFoundError(
-                f"Could not find src/hod.jl in {julia_project_path}"
-            )
+            raise FileNotFoundError(f"Could not find src/hod.jl in {julia_project_path}")
 
         # Activate the Julia project
         Main.eval(f'using Pkg; Pkg.activate("{julia_project_path}")')
