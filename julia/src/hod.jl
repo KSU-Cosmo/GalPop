@@ -1,5 +1,7 @@
 # File: julia/src/hod.jl
 
+using SpecialFunctions: erfc
+
 """
     calculate_p_cen(halo_mass, Mcut, sigma)
 
