@@ -198,9 +198,9 @@ class GalPopWrapper:
         # Convert result to Python
         return {
             "x": np.array(result.x),
-            "y": np.array(result.y), 
+            "y": np.array(result.y),
             "z": np.array(result.z),
-            "count": int(result.count)
+            "count": int(result.count),
         }
 
 
