@@ -90,7 +90,18 @@ Random.randn() = 0.5 # Forces randn() to always return 0.5
         @test isapprox(z_out, result.z, atol = 1e-4)
         @test isapprox(count_out, result.count, atol = 1e-4)
 
-        hod_params.rsd = false
+        hod_params = (
+            lnMcut = 13.0,
+            sigma = 0.1,
+            lnM1 = 13.0,
+            kappa = 1,
+            alpha = 1.0,
+            alpha_c = 1.0,
+            alpha_s = 2.0,
+            rsd = false,
+            Lmin = -1000.0,
+            Lmax = 1000.0
+        )
 
         z_out = [1.0, 1.0, 1.0, 2.0]
         result = populate_galaxies(halos, subhalos, hod_params)
