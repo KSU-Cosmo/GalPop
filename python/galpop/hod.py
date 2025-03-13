@@ -197,11 +197,10 @@ class GalPopWrapper:
 
         # Convert result to Python
         return {
-            # Assuming the result tuple has x, y, z, count in that order
-            "x": np.array(result[0]),
-            "y": np.array(result[1]),
-            "z": np.array(result[2]),
-            "count": int(result[3]),
+            "x": np.array(result.x),
+            "y": np.array(result.y), 
+            "z": np.array(result.z),
+            "count": int(result.count)
         }
 
 
