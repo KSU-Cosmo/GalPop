@@ -174,13 +174,13 @@ class TestHODWrapper:
         julia_z = np.array(Main.eval("julia_result.z"))
         julia_count = int(Main.eval("julia_result.count"))
 
+        print(np.sort(py_result["x"]))
+        print(np.sort(julia_x))
         # Compare results
         assert py_result["count"] == julia_count, "Galaxy counts don't match"
 
         # Since there could be randomness in the HOD, sort arrays before comparing
         # to account for potential different ordering
-        print(np.sort(py_result["x"]))
-        print(np.sort(julia_x))
         assert np.allclose(np.sort(py_result["x"]), np.sort(julia_x)), "X coordinates don't match"
         assert np.allclose(np.sort(py_result["y"]), np.sort(julia_y)), "Y coordinates don't match"
         assert np.allclose(np.sort(py_result["z"]), np.sort(julia_z)), "Z coordinates don't match"
