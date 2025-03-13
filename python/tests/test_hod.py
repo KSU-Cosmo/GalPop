@@ -7,7 +7,7 @@ from julia import Main
 
 # Add the parent directory to the path if needed
 # sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-# To avoid problems with the probabilistic nature of the process I intentionally 
+# To avoid problems with the probabilistic nature of the process I intentionally
 # make Mcut and M1 very low so that all candidate halos and satellites make it
 # to the sample with a very high probability.
 # Very occasionally this test may fail.
