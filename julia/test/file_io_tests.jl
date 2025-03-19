@@ -20,13 +20,13 @@ using GalPop  # Assuming save_to_hdf5 and load_from_hdf5 are accessible through 
         )
         
         # Save the data
-        save_to_hdf5(test_data, temp_filename)
+        GalPop.save_to_hdf5(test_data, temp_filename)
         
         # Check file exists
         @test isfile(temp_filename)
         
         # Load the data
-        loaded_data = load_from_hdf5(temp_filename)
+        loaded_data = GalPop.load_from_hdf5(temp_filename)
         
         # Check structure is preserved
         @test Set(keys(loaded_data)) == Set(keys(test_data))
