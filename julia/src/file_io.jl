@@ -1,16 +1,5 @@
 using HDF5
 
-"""
-Set the dimensions for an HDF5 dataset with optional chunking.
-"""
-function set_dims_h5(dataset, dims; chunks=nothing)
-    # Convert single integer to tuple if needed
-    dims_tuple = isa(dims, Integer) ? (dims,) : dims
-
-    # Resize the dataset to the new dimensions
-    return HDF5.set_extent_dims(dataset, dims_tuple)
-end
-
 function save_to_hdf5(data::Dict, filename::String)
     """
     Save a nested dictionary structure containing arrays to an HDF5 file.
@@ -31,10 +20,22 @@ function save_to_hdf5(data::Dict, filename::String)
 
             # Loop through arrays in each group
             for (key, array) in group_data
-                # Save each array as a dataset with compression
-                group[key] = array
-                # Apply compression
-                set_dims_h5(group[key], size(array)...; chunks=(min(1000, size(array, 1)),))
+                # Calculate chunk size - important for compression efficiency
+                chunk_size = min(1000, size(array, 1))
+
+                # Create dataset with compression directly
+                # This replaces the need for set_dims_h5
+                dset = create_dataset(
+                    group,
+                    key,
+                    datatype(eltype(array)),
+                    dataspace(size(array));
+                    chunk=(chunk_size,),  # Set chunk size at creation
+                    compress=3,            # Compression level (0-9)
+                )
+
+                # Write data to the dataset
+                dset[:] = array
             end
         end
     end
@@ -72,10 +73,3 @@ function load_from_hdf5(filename::String)
 
     return data
 end
-
-# Example usage in Julia:
-# Save data
-# save_to_hdf5(data, \"cosmology_data.h5\")
-
-# Load data
-# loaded_data = load_from_hdf5(\"cosmology_data.h5\")
