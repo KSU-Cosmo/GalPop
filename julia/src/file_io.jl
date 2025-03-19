@@ -1,10 +1,14 @@
 using HDF5
 
 """
-Set the dimensions for an HDF5 dataset.
+Set the dimensions for an HDF5 dataset with optional chunking.
 """
-function set_dims_h5(dataset, dims)
-    return HDF5.set_dims!(dataset, dims)
+function set_dims_h5(dataset, dims; chunks=nothing)
+    if isnothing(chunks)
+        HDF5.set_dims!(dataset, dims)
+    else
+        HDF5.set_dims!(dataset, dims; chunks=chunks)
+    end
 end
 
 function save_to_hdf5(data::Dict, filename::String)
