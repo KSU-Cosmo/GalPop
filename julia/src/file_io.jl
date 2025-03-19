@@ -4,13 +4,11 @@ using HDF5
 Set the dimensions for an HDF5 dataset with optional chunking.
 """
 function set_dims_h5(dataset, dims; chunks=nothing)
-    if isnothing(chunks)
-        HDF5.resize!(dataset, dims)
-    else
-        # For chunked datasets, we need to set the chunk size when creating the dataset
-        # If the dataset already exists, we can only resize it
-        HDF5.resize!(dataset, dims)
-    end
+    # Convert single integer to tuple if needed
+    dims_tuple = isa(dims, Integer) ? (dims,) : dims
+    
+    # Resize the dataset to the new dimensions
+    HDF5.set_extent_dims(dataset, dims_tuple)
 end
 
 function save_to_hdf5(data::Dict, filename::String)
