@@ -2,6 +2,7 @@ using Test
 using HDF5
 using Random
 using GalPop
+using file_io
 
 # Assuming your functions are in a module called HDF5IO
 # include("path/to/hdf5_io.jl")  # Uncomment and adjust as needed
