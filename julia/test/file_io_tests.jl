@@ -48,7 +48,7 @@ end
         
         @testset "Save to HDF5" begin
             # Test saving
-            save_to_hdf5(sample_data, temp_filename)
+            GalPop.save_to_hdf5(sample_data, temp_filename)
             
             # Check file exists
             @test isfile(temp_filename)
@@ -59,7 +59,7 @@ end
         
         @testset "Load from HDF5" begin
             # Load the data
-            loaded_data = load_from_hdf5(temp_filename)
+            loaded_data = GalPop.load_from_hdf5(temp_filename)
             
             # Check structure is preserved
             @test Set(keys(loaded_data)) == Set(keys(sample_data))
@@ -72,7 +72,7 @@ end
         
         @testset "Data Integrity" begin
             # Load the data
-            loaded_data = load_from_hdf5(temp_filename)
+            loaded_data = GalPop.load_from_hdf5(temp_filename)
             
             # Check each array for equality
             for group in keys(sample_data)
@@ -102,8 +102,8 @@ end
             # Test saving and loading
             large_filename = tempname() * ".h5"
             try
-                save_to_hdf5(large_data, large_filename)
-                loaded_large_data = load_from_hdf5(large_filename)
+                GalPop.save_to_hdf5(large_data, large_filename)
+                loaded_large_data = GalPop.load_from_hdf5(large_filename)
                 
                 # Verify key parts of the data
                 @test size(loaded_large_data["halo"]["mass"]) == size(large_data["halo"]["mass"])
@@ -126,7 +126,7 @@ end
             # Save the data
             compatibility_filename = tempname() * ".h5"
             try
-                save_to_hdf5(test_data, compatibility_filename)
+                GalPop.save_to_hdf5(test_data, compatibility_filename)
                 
                 # This is just a comment about how to verify in Python:
                 """
