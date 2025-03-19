@@ -4,7 +4,7 @@ using HDF5
 Set the dimensions for an HDF5 dataset.
 """
 function set_dims_h5(dataset, dims)
-    HDF5.set_dims!(dataset, dims)
+    return HDF5.set_dims!(dataset, dims)
 end
 
 function save_to_hdf5(data::Dict, filename::String)
